@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardGrid, { Task } from "./DashboardGrid";
 import { supabase } from "@/lib/supabaseClient";
-import AppAppBar from "../landing-page/components/AppAppBar";
+import AppAppBar from "../global-components/AppAppBar";
 import { Box } from "@mui/material";
 
 export default function Page() {
