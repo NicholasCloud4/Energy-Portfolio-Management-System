@@ -10,7 +10,7 @@ export default function Page() {
   const [rows, setRows] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Example of how you can display data from supabase. If RLS is enabled you need to integrade policies. In this example RLS is not enabled.
+  // Example of how you can display data from supabase. If RLS is enabled you need to integrate policies. In this example RLS is not enabled.
   useEffect(() => {
     const fetchTasks = async () => {
       const { data, error } = await supabase

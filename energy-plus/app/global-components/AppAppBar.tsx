@@ -16,6 +16,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import ColorModeIconDropdown from "../../theme/ColorModeIconDropdown";
 import Sitemark from "./SitemarkIcon";
+import LoginIcon from '@mui/icons-material/Login';
 
 // your styled Toolbar
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
@@ -77,12 +78,21 @@ export default function AppAppBar() {
               alignItems: "center",
             }}
           >
-            <Button color="primary" variant="text" size="small">
+            <Button
+                component={Link}
+                href="/sign-in"
+                color="primary"
+                variant="contained"
+                size="small"
+                startIcon={<LoginIcon />}
+            >
               Sign in
             </Button>
+
             <Button color="primary" variant="contained" size="small">
               Sign up
             </Button>
+
             <ColorModeIconDropdown />
           </Box>
           <Box sx={{ display: { xs: "flex", md: "none" }, gap: 1 }}>
