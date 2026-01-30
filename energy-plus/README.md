@@ -37,9 +37,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Sources
 <details>
-<summary>
-
+<summary>Click Me for Sources</summary>
+  
 Login PNG = https://pngtree.com/freepng/avatar-icon-profile-icon-member-login-vector-isolated_5247852.html
 
-</summary>
 </details>
