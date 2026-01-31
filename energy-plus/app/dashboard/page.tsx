@@ -5,6 +5,7 @@ import DashboardGrid, { Task } from "./DashboardGrid";
 import { supabase } from "@/lib/supabaseClient";
 import AppAppBar from "../global-components/AppAppBar";
 import { Box } from "@mui/material";
+import CssBaseline from "@mui/material/CssBaseline";
 
 export default function Page() {
   const [rows, setRows] = useState<Task[]>([]);
@@ -31,6 +32,7 @@ export default function Page() {
 
   return (
     <>
+      <CssBaseline enableColorScheme />
       <AppAppBar />
       <Box sx={{ p: 2, textAlign: "center" }}>
         <h1>Supabase Example Grid</h1>

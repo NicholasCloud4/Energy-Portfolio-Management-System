@@ -18,7 +18,6 @@ import ColorModeIconDropdown from "../../theme/ColorModeIconDropdown";
 import Sitemark from "./SitemarkIcon";
 import LoginIcon from '@mui/icons-material/Login';
 
-// your styled Toolbar
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
@@ -58,12 +57,14 @@ export default function AppAppBar() {
           <Box
             sx={{ flexGrow: 1, display: "flex", alignItems: "center", px: 0 }}
           >
+            <Box sx={{ display: { xs: "none", md: "flex", marginBottom: 5, } }}>
             <Sitemark />
+            </Box>
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
               <Button
                 component={Link}
                 href="/dashboard"
-                variant="contained"
+                variant="text"
                 color="primary"
                 size="small"
               >
@@ -82,7 +83,7 @@ export default function AppAppBar() {
                 component={Link}
                 href="/sign-in"
                 color="primary"
-                variant="contained"
+                variant="text"
                 size="small"
                 startIcon={<LoginIcon />}
             >
@@ -101,14 +102,16 @@ export default function AppAppBar() {
               <MenuIcon />
             </IconButton>
             <Drawer
-              anchor="top"
-              open={open}
-              onClose={toggleDrawer(false)}
-              PaperProps={{
-                sx: {
-                  top: "var(--template-frame-height, 0px)",
-                },
-              }}
+                anchor="top"
+                open={open}
+                onClose={toggleDrawer(false)}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      top: "var(--template-frame-height, 0px)",
+                    },
+                  },
+                }}
             >
               <Box sx={{ p: 2, backgroundColor: "background.default" }}>
                 <Box
