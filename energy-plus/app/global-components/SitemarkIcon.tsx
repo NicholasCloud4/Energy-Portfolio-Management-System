@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Box from "@mui/material/Box";
+import BoltIcon from "@mui/icons-material/Bolt";
 
 export default function SitemarkIcon() {
   return (
@@ -9,6 +10,7 @@ export default function SitemarkIcon() {
       sx={{
         display: "flex",
         alignItems: "center",
+        gap: 0.0,
         fontFamily: "'Inter', 'Roboto', sans-serif",
         fontWeight: 700,
         fontSize: 24,
@@ -19,6 +21,7 @@ export default function SitemarkIcon() {
       }}
       onClick={() => (window.location.href = "/landing-page")}
     >
+      <BoltIcon sx={{ fontSize: 22 }} aria-hidden />
       energy+
     </Box>
   );

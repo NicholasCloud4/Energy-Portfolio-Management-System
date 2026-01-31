@@ -47,20 +47,7 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
     [theme.breakpoints.up('sm')]: {
         padding: theme.spacing(4),
     },
-    '&::before': {
-        content: '""',
-        display: 'block',
-        position: 'absolute',
-        zIndex: -1,
-        inset: 0,
-        backgroundImage:
-            'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
-        backgroundRepeat: 'no-repeat',
-        ...theme.applyStyles('dark', {
-            backgroundImage:
-                'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
-        }),
-    },
+    backgroundColor: (theme.vars || theme).palette.background.default,
 }));
 
 export default function SignIn(props: { disableCustomTheme?: boolean }) {
@@ -123,7 +110,9 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <SignInContainer direction="column" justifyContent="space-between">
                 <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
                 <Card variant="outlined">
+                    <Box sx={{display: 'flex', justifyContent: 'center'}}>
                     <SitemarkIcon />
+                    </Box>
                     <Typography
                         component="h1"
                         variant="h4"
