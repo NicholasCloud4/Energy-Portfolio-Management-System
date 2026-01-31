@@ -18,7 +18,6 @@ import ColorModeIconDropdown from "../../theme/ColorModeIconDropdown";
 import Sitemark from "./SitemarkIcon";
 import LoginIcon from '@mui/icons-material/Login';
 
-// your styled Toolbar
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
