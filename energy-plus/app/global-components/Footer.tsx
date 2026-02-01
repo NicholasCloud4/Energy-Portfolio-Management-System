@@ -18,7 +18,7 @@ function Copyright() {
   return (
     <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
       {'Copyright © '}
-        energy+ 4910C
+        energy plus 4910C
       &nbsp;
       {new Date().getFullYear()}
     </Typography>
