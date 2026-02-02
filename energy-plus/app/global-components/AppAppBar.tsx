@@ -55,16 +55,7 @@ export default function AppAppBar() {
             <Box sx={{ display: { xs: "none", md: "flex", margin: " -4px 0 0 0 "} }}>
               <Sitemark />
             </Box>
-            <Button
-                component={Link}
-                href="/dashboard"
-                variant="text"
-                color="primary"
-                size="small"
-                sx={{ display: { xs: "none", md: "inline-flex" } }}
-            >
-              Dashboard
-            </Button>
+
           </Box>
 
           {/* Right Section */}

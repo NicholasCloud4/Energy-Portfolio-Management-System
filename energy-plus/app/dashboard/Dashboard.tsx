@@ -8,7 +8,6 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import AppNavbar from './components/AppNavbar';
 import Header from './components/Header';
-import MainGrid from './components/MainGrid';
 import SideMenu from './components/SideMenu';
 import AppTheme from '../../theme/AppTheme';
 import {
@@ -41,8 +40,7 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
                 <Toolbar /> {/* <-- pushes main content below AppBar */}
                 <Stack spacing={2} sx={{ alignItems: 'center', mx: 3, pb: 5 }}>
                     <Header />
-                    <MainGrid />
-                </Stack>
+                                    </Stack>
             </Box>
         </Box>
     </AppTheme>
