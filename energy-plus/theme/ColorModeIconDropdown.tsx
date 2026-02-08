@@ -1,3 +1,5 @@
+// Theme toggle component that lets users switch between system, light, and dark modes.
+
 import * as React from 'react';
 import DarkModeIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeIcon from '@mui/icons-material/LightModeRounded';
