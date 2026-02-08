@@ -1,3 +1,8 @@
+// ESLint configuration for our project.
+// Uses core web vitals and TypeScript rules to catch errors
+// and enforce code quality, while ignoring build and generated files.
+
+
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
