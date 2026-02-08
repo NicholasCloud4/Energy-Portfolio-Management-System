@@ -2,10 +2,8 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
 import CssBaseline from "@mui/material/CssBaseline";
 import Divider from "@mui/material/Divider";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
 import Link from "@mui/material/Link";
@@ -15,9 +13,12 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import AppTheme from "../../theme/AppTheme";
-import ColorModeSelect from "../../theme/ColorModeSelect";
-import { GoogleIcon, FacebookIcon } from "./components/CustomIcons";
 import SitemarkIcon from "../global-components/SitemarkIcon";
+import { supabaseClient } from "@/lib/supabaseClient";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import { useRouter } from "next/navigation";
+import ColorModeSwitch from "@/theme/ColorModeSwitch";
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -32,10 +33,6 @@ const Card = styled(MuiCard)(({ theme }) => ({
     [theme.breakpoints.up("sm")]: {
         width: "450px",
     },
-    ...theme.applyStyles("dark", {
-        boxShadow:
-            "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-    }),
 }));
 
 const SignUpContainer = styled(Stack)(({ theme }) => ({
@@ -62,198 +59,151 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
-    const [emailError, setEmailError] = React.useState(false);
-    const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
-    const [passwordError, setPasswordError] = React.useState(false);
-    const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-    const [nameError, setNameError] = React.useState(false);
-    const [nameErrorMessage, setNameErrorMessage] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
+    const [successOpen, setSuccessOpen] = React.useState(false);
+    const router = useRouter();
 
-    const validateInputs = () => {
-        const email = document.getElementById("email") as HTMLInputElement;
-        const password = document.getElementById(
-            "password",
-        ) as HTMLInputElement;
-        const name = document.getElementById("name") as HTMLInputElement;
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setLoading(true);
+        setError(null);
 
-        let isValid = true;
+        const form = event.currentTarget;
+        const username = (form.elements.namedItem("username") as HTMLInputElement).value;
+        const firstName = (form.elements.namedItem("firstName") as HTMLInputElement).value;
+        const lastName = (form.elements.namedItem("lastName") as HTMLInputElement).value;
+        const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+        const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+        const confirmPassword = (form.elements.namedItem("confirmPassword") as HTMLInputElement).value;
 
-        if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-            setEmailError(true);
-            setEmailErrorMessage("Please enter a valid email address.");
-            isValid = false;
-        } else {
-            setEmailError(false);
-            setEmailErrorMessage("");
-        }
-
-        if (!password.value || password.value.length < 6) {
-            setPasswordError(true);
-            setPasswordErrorMessage(
-                "Password must be at least 6 characters long.",
-            );
-            isValid = false;
-        } else {
-            setPasswordError(false);
-            setPasswordErrorMessage("");
-        }
-
-        if (!name.value || name.value.length < 1) {
-            setNameError(true);
-            setNameErrorMessage("Name is required.");
-            isValid = false;
-        } else {
-            setNameError(false);
-            setNameErrorMessage("");
-        }
-
-        return isValid;
-    };
-
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        if (nameError || emailError || passwordError) {
-            event.preventDefault();
+        if (password !== confirmPassword) {
+            setError("Passwords do not match.");
+            setLoading(false);
             return;
         }
-        const data = new FormData(event.currentTarget);
-        console.log({
-            name: data.get("name"),
-            lastName: data.get("lastName"),
-            email: data.get("email"),
-            password: data.get("password"),
-        });
+
+        const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+
+        if (signUpError) {
+            setError(signUpError.message);
+            setLoading(false);
+            return;
+        }
+
+        const userId = authData.user?.id;
+        if (!userId) {
+            setError("User creation failed.");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            // Include email when creating the profile
+            const res = await fetch("/api/profiles", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: userId, username, first_name: firstName, last_name: lastName, email }), // Add email here
+            });
+
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || "Failed to create profile");
+
+            setSuccessOpen(true);
+            setTimeout(() => {
+                setSuccessOpen(false);
+                router.push("/sign-in");
+            }, 6000);
+
+        } catch (err: any) {
+            setError(err.message);
+        }
+
+        setLoading(false);
     };
+
 
     return (
         <AppTheme {...props}>
+            <Snackbar open={successOpen} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+                <Alert severity="success" variant="filled">
+                    Your account has been created. Please check your email to confirm.
+                </Alert>
+            </Snackbar>
+
             <CssBaseline enableColorScheme />
-            <ColorModeSelect
-                sx={{ position: "fixed", top: "1rem", right: "1rem" }}
-            />
+            <ColorModeSwitch sx={{ position: "fixed", top: "1.1rem", right: "1rem" }} />
+
             <SignUpContainer direction="column" justifyContent="space-between">
                 <Card variant="outlined">
-                    <SitemarkIcon />
+                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                        <SitemarkIcon />
+                    </Box>
+
                     <Typography
                         component="h1"
                         variant="h4"
-                        sx={{
-                            width: "100%",
-                            fontSize: "clamp(2rem, 10vw, 2.15rem)",
-                        }}
+                        sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
                     >
                         Sign up
                     </Typography>
+
                     <Box
                         component="form"
                         onSubmit={handleSubmit}
-                        sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 2,
-                        }}
+                        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
                     >
                         <FormControl>
-                            <FormLabel htmlFor="name">Full name</FormLabel>
-                            <TextField
-                                autoComplete="name"
-                                name="name"
-                                required
-                                fullWidth
-                                id="name"
-                                placeholder="Jon Snow"
-                                error={nameError}
-                                helperText={nameErrorMessage}
-                                color={nameError ? "error" : "primary"}
-                            />
+                            <FormLabel>Username</FormLabel>
+                            <TextField name="username" required fullWidth />
                         </FormControl>
+
                         <FormControl>
-                            <FormLabel htmlFor="email">Email</FormLabel>
-                            <TextField
-                                required
-                                fullWidth
-                                id="email"
-                                placeholder="your@email.com"
-                                name="email"
-                                autoComplete="email"
-                                variant="outlined"
-                                error={emailError}
-                                helperText={emailErrorMessage}
-                                color={passwordError ? "error" : "primary"}
-                            />
+                            <FormLabel>First name</FormLabel>
+                            <TextField name="firstName" required fullWidth />
                         </FormControl>
+
                         <FormControl>
-                            <FormLabel htmlFor="password">Password</FormLabel>
-                            <TextField
-                                required
-                                fullWidth
-                                name="password"
-                                placeholder="••••••"
-                                type="password"
-                                id="password"
-                                autoComplete="new-password"
-                                variant="outlined"
-                                error={passwordError}
-                                helperText={passwordErrorMessage}
-                                color={passwordError ? "error" : "primary"}
-                            />
+                            <FormLabel>Last name</FormLabel>
+                            <TextField name="lastName" required fullWidth />
                         </FormControl>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    value="allowExtraEmails"
-                                    color="primary"
-                                />
-                            }
-                            label="I want to receive updates via email."
-                        />
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            onClick={validateInputs}
-                        >
-                            Sign up
+
+                        <FormControl>
+                            <FormLabel>Email</FormLabel>
+                            <TextField name="email" type="email" required fullWidth />
+                        </FormControl>
+
+                        <FormControl>
+                            <FormLabel>Password</FormLabel>
+                            <TextField name="password" type="password" required fullWidth />
+                        </FormControl>
+
+                        <FormControl>
+                            <FormLabel>Re-enter Password</FormLabel>
+                            <TextField name="confirmPassword" type="password" required fullWidth />
+                        </FormControl>
+
+                        {error && (
+                            <Typography color="error" variant="body2">
+                                {error}
+                            </Typography>
+                        )}
+
+                        <Button type="submit" fullWidth variant="contained" disabled={loading}>
+                            {loading ? "Creating account..." : "Sign up"}
                         </Button>
                     </Box>
+
                     <Divider>
-                        <Typography sx={{ color: "text.secondary" }}>
-                            or
-                        </Typography>
+                        <Typography sx={{ color: "text.secondary" }}>or</Typography>
                     </Divider>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 2,
-                        }}
-                    >
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() => alert("Sign up with Google")}
-                            startIcon={<GoogleIcon />}
-                        >
-                            Sign up with Google
-                        </Button>
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() => alert("Sign up with Facebook")}
-                            startIcon={<FacebookIcon />}
-                        >
-                            Sign up with Facebook
-                        </Button>
-                        <Typography sx={{ textAlign: "center" }}>
-                            Already have an account?{" "}
-                            <Link
-                                href="/sign-in"
-                                variant="body2"
-                                sx={{ alignSelf: "center" }}
-                            >
-                                Sign in
-                            </Link>
-                        </Typography>
-                    </Box>
+
+                    <Typography sx={{ textAlign: "center" }}>
+                        Already have an account?{" "}
+                        <Link href="/sign-in" variant="body2">
+                            Sign in
+                        </Link>
+                    </Typography>
                 </Card>
             </SignUpContainer>
         </AppTheme>
