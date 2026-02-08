@@ -1,7 +1,7 @@
 import * as React from 'react';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import SideMenuMobile from './SideMenuMobile';
-import ColorModeIconDropdown from '@/theme/ColorModeIconDropdown';
+import ColorModeIconDropdown from '@/theme/ColorModeSwitch';
 import {styled} from "@mui/material/styles";
 import {AppBar, tabsClasses} from "@mui/material";
 import Stack from "@mui/material/Stack";
