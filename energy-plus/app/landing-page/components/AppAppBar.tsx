@@ -1,3 +1,5 @@
+ //AppAppBar.tsx: Responsive top navigation bar with links, auth buttons, theme toggle, and mobile drawer.
+
 'use client';
 
 import * as React from 'react';
