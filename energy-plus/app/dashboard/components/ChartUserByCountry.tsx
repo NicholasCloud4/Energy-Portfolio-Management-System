@@ -1,3 +1,8 @@
+// Dashboard card that displays a pie chart of users by country,
+// along with a breakdown list showing each country’s percentage
+// and a progress bar. Includes flag icons and a center label
+// to show the total number of users.
+
 import * as React from 'react';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { useDrawingArea } from '@mui/x-charts/hooks';
