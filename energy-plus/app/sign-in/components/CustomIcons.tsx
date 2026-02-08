@@ -1,3 +1,5 @@
+// Reusable SVG icons (site logo, Facebook, and Google) wrapped with MUI SvgIcon.
+
 import SvgIcon from '@mui/material/SvgIcon';
 
 export function SitemarkIcon() {
