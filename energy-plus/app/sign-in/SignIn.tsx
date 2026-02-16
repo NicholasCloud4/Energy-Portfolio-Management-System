@@ -69,24 +69,28 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     const [rememberMe, setRememberMe] = React.useState(true);
 
     const router = useRouter();
+    const emailRef = React.useRef<HTMLInputElement>(null);
+    const passwordRef = React.useRef<HTMLInputElement>(null);
 
     const handleClickOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
+    // Load saved email from localStorage on client
     React.useEffect(() => {
-        const savedEmail = localStorage.getItem("savedEmail");
-        if (savedEmail) {
-            const emailInput = document.getElementById("email") as HTMLInputElement;
-            if (emailInput) emailInput.value = savedEmail;
+        if (typeof window !== "undefined") {
+            const savedEmail = localStorage.getItem("savedEmail");
+            if (savedEmail && emailRef.current) {
+                emailRef.current.value = savedEmail;
+            }
         }
     }, []);
 
     const validateInputs = () => {
-        const email = document.getElementById('email') as HTMLInputElement;
-        const password = document.getElementById('password') as HTMLInputElement;
+        const email = emailRef.current;
+        const password = passwordRef.current;
         let isValid = true;
 
-        if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+        if (!email?.value || !/\S+@\S+\.\S+/.test(email.value)) {
             setEmailError(true);
             setEmailErrorMessage('Please enter a valid email address.');
             isValid = false;
@@ -95,7 +99,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             setEmailErrorMessage('');
         }
 
-        if (!password.value || password.value.length < 6) {
+        if (!password?.value || password.value.length < 6) {
             setPasswordError(true);
             setPasswordErrorMessage('Password must be at least 6 characters long.');
             isValid = false;
@@ -111,9 +115,8 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         event.preventDefault();
         if (!validateInputs()) return;
 
-        const data = new FormData(event.currentTarget);
-        const email = data.get("email") as string;
-        const password = data.get("password") as string;
+        const email = emailRef.current?.value ?? '';
+        const password = passwordRef.current?.value ?? '';
 
         try {
             const { data: authData, error: signInError } = await supabaseClient.auth.signInWithPassword({
@@ -127,8 +130,10 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 return;
             }
 
-            if (rememberMe) localStorage.setItem("savedEmail", email);
-            else localStorage.removeItem("savedEmail");
+            if (typeof window !== "undefined") {
+                if (rememberMe) localStorage.setItem("savedEmail", email);
+                else localStorage.removeItem("savedEmail");
+            }
 
             if (authData.user) router.push("/dashboard");
         } catch (err: any) {
@@ -151,13 +156,19 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                         Sign in
                     </Typography>
 
-                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}>
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit}
+                        noValidate
+                        sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}
+                    >
                         <FormControl>
                             <FormLabel htmlFor="email">Email</FormLabel>
                             <TextField
                                 error={emailError}
                                 helperText={emailErrorMessage}
                                 id="email"
+                                inputRef={emailRef}
                                 type="email"
                                 name="email"
                                 placeholder="your@email.com"
@@ -183,6 +194,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                                 required
                                 fullWidth
                                 variant="outlined"
+                                inputRef={passwordRef}
                                 color={passwordError ? 'error' : 'primary'}
                             />
                         </FormControl>
@@ -203,7 +215,13 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                             Sign in
                         </Button>
 
-                        <Link component="button" type="button" onClick={handleClickOpen} variant="body2" sx={{ alignSelf: 'center' }}>
+                        <Link
+                            component="button"
+                            type="button"
+                            onClick={handleClickOpen}
+                            variant="body2"
+                            sx={{ alignSelf: 'center' }}
+                        >
                             Forgot your password?
                         </Link>
                     </Box>

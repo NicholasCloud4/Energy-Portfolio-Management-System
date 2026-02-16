@@ -11,6 +11,7 @@ import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import LoginIcon from "@mui/icons-material/Login";
 import CircularProgress from "@mui/material/CircularProgress";
+import Image from "next/image";
 
 import NavbarBreadcrumbs from "../dashboard/components/NavbarBreadcrumbs";
 import ColorModeIconDropdown from "../../theme/ColorModeSwitch";
@@ -112,10 +113,21 @@ export default function AppAppBar() {
         >
             <StyledToolbar variant="dense" disableGutters>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box sx={{ display: { xs: "none", md: "flex" }, margin: "-4px 0 0 0" }}>
-                        <Sitemark />
-                    </Box>
-                    {user && !isLandingPage ? <NavbarBreadcrumbs /> : null}
+                    {!user || isLandingPage ? <Sitemark /> : null}
+
+                    {user && !isLandingPage && (
+                        <Box sx={{ display: { xs: "none", md: "flex" }, margin: "-4px 0 0 0" }}>
+                            <Image
+                                src="/logo.png"
+                                alt="Logo"
+                                width={15}
+                                height={22}
+                                priority
+                            />
+                        </Box>
+                    )}
+
+                    {user && !isLandingPage && <NavbarBreadcrumbs />}
                 </Box>
 
                 <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
