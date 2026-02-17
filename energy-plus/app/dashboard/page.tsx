@@ -1,19 +1,14 @@
 'use client';
 
-import * as React from 'react';
-import CssBaseline from '@mui/material/CssBaseline';
-import Box from '@mui/material/Box';
-import AppAppBar from '../global-components/AppAppBar';
-import Dashboard from './Dashboard';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function Page() {
-  return (
-      <>
-        <CssBaseline enableColorScheme />
-        <AppAppBar />
-        <Box sx={{ p: 2 }}>
-          <Dashboard disableCustomTheme={false} />
-        </Box>
-      </>
-  );
+export default function DashboardPage() {
+    const router = useRouter();
+
+    useEffect(() => {
+        router.replace('/dashboard/home');
+    }, [router]);
+
+    return null;
 }

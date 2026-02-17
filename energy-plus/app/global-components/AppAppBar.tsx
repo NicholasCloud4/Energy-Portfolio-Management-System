@@ -6,17 +6,18 @@ import Box from "@mui/material/Box";
 import MuiAppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Drawer from "@mui/material/Drawer";
-import Divider from "@mui/material/Divider";
-import MenuItem from "@mui/material/MenuItem";
 import Link from "next/link";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import Avatar from "@mui/material/Avatar";
+import Typography from "@mui/material/Typography";
 import LoginIcon from "@mui/icons-material/Login";
+import CircularProgress from "@mui/material/CircularProgress";
+import Image from "next/image";
 
-import ColorModeIconDropdown from "../../theme/ColorModeIconDropdown";
+import NavbarBreadcrumbs from "../dashboard/components/NavbarBreadcrumbs";
+import ColorModeIconDropdown from "../../theme/ColorModeSwitch";
 import Sitemark from "./SitemarkIcon";
+import { supabaseClient } from "@/lib/supabaseClient";
+import { usePathname, useRouter } from "next/navigation";
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
     display: "flex",
@@ -32,8 +33,69 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 }));
 
 export default function AppAppBar() {
-    const [open, setOpen] = React.useState(false);
-    const toggleDrawer = (newOpen: boolean) => () => setOpen(newOpen);
+    const [user, setUser] = React.useState<any>(null);
+    const [profile, setProfile] = React.useState<any>(null);
+    const [loading, setLoading] = React.useState(true);
+    const [loggingOut, setLoggingOut] = React.useState(false);
+    const pathname = usePathname();
+    const router = useRouter();
+    const isLandingPage = pathname === "/landing-page";
+
+    const fetchUserProfile = async (userId: string) => {
+        const { data, error } = await supabaseClient
+            .from("profiles")
+            .select("first_name, last_name, email, avatar_url")
+            .eq("id", userId)
+            .single();
+
+        if (!error && data) {
+            setProfile(data);
+        } else {
+            console.error("Error fetching profile:", error);
+            setProfile(null);
+        }
+    };
+
+    React.useEffect(() => {
+        const loadUserSession = async () => {
+            const { data } = await supabaseClient.auth.getSession();
+            const sessionUser = data.session?.user ?? null;
+
+            setUser(sessionUser);
+            if (sessionUser) {
+                await fetchUserProfile(sessionUser.id);
+            }
+            setLoading(false);
+        };
+
+        loadUserSession();
+
+        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+            (_event, session) => {
+                const sessionUser = session?.user ?? null;
+
+                setUser(sessionUser);
+                if (sessionUser) {
+                    fetchUserProfile(sessionUser.id);
+                } else {
+                    setProfile(null);
+                }
+            }
+        );
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
+
+    const handleLogout = async () => {
+        setLoggingOut(true);
+        await supabaseClient.auth.signOut();
+        setUser(null);
+        setProfile(null);
+        console.log("User logged out");
+        router.push("/sign-in");
+    };
 
     return (
         <MuiAppBar
@@ -50,114 +112,78 @@ export default function AppAppBar() {
             }}
         >
             <StyledToolbar variant="dense" disableGutters>
-                {/* Logo / Left Section */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box
-                        sx={{
-                            display: {
-                                xs: "none",
-                                md: "flex",
-                                margin: " -4px 0 0 0 ",
-                            },
-                        }}
-                    >
-                        <Sitemark />
-                    </Box>
-                </Box>
+                    {!user || isLandingPage ? <Sitemark /> : null}
 
-                {/* Right Section */}
-                <Box
-                    sx={{
-                        display: { xs: "none", md: "flex" },
-                        gap: 1,
-                        alignItems: "center",
-                    }}
-                >
-                    <Button
-                        component={Link}
-                        href="/sign-in"
-                        color="primary"
-                        variant="outlined"
-                        size="small"
-                        startIcon={<LoginIcon />}
-                    >
-                        Sign in
-                    </Button>
-
-                    <Button
-                        component={Link}
-                        href="/sign-up"
-                        color="primary"
-                        variant="contained"
-                        size="small"
-                    >
-                        Sign up
-                    </Button>
-
-                    <ColorModeIconDropdown />
-                </Box>
-
-                {/* Mobile Section */}
-                <Box sx={{ display: { xs: "flex", md: "none" }, gap: 1 }}>
-                    <ColorModeIconDropdown size="medium" />
-                    <IconButton
-                        aria-label="Menu button"
-                        onClick={toggleDrawer(true)}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <Drawer
-                        anchor="top"
-                        open={open}
-                        onClose={toggleDrawer(false)}
-                        slotProps={{
-                            paper: {
-                                sx: {
-                                    top: 0,
-                                    p: 2,
-                                    bgcolor: "background.default",
-                                },
-                            },
-                        }}
-                    >
-                        <Box
-                            sx={{ display: "flex", justifyContent: "flex-end" }}
-                        >
-                            <IconButton onClick={toggleDrawer(false)}>
-                                <CloseRoundedIcon />
-                            </IconButton>
+                    {user && !isLandingPage && (
+                        <Box sx={{ display: { xs: "none", md: "flex" }, margin: "-4px 0 0 0" }}>
+                            <Image
+                                src="/logo.png"
+                                alt="Logo"
+                                width={15}
+                                height={22}
+                                priority
+                            />
                         </Box>
+                    )}
 
-                        <MenuItem>
+                    {user && !isLandingPage && <NavbarBreadcrumbs />}
+                </Box>
+
+                <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
+                    {loading ? (
+                        <CircularProgress color="inherit" size={24} />
+                    ) : loggingOut ? (
+                        <CircularProgress color="inherit" size={24} />
+                    ) : user && profile ? (
+                        <>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 2 }}>
+                                <Avatar
+                                    alt={`${profile.first_name} ${profile.last_name}`}
+                                    src={profile.avatar_url || ""}
+                                    sx={{ width: 36, height: 36 }}
+                                />
+                                <Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: "16px" }}>
+                                        {profile.first_name} {profile.last_name}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                                        {profile.email}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Button color="primary" variant="outlined" size="small" onClick={handleLogout}>
+                                Logout
+                            </Button>
+                        </>
+                    ) : (
+                        <>
                             <Button
                                 component={Link}
-                                href="/dashboard"
-                                variant="text"
-                                fullWidth
-                            >
-                                Dashboard
-                            </Button>
-                        </MenuItem>
-                        <Divider sx={{ my: 2 }} />
-                        <MenuItem>
-                            <Button
-                                color="primary"
-                                variant="contained"
-                                fullWidth
-                            >
-                                Sign up
-                            </Button>
-                        </MenuItem>
-                        <MenuItem>
-                            <Button
+                                href="/sign-in"
                                 color="primary"
                                 variant="outlined"
-                                fullWidth
+                                size="small"
+                                startIcon={<LoginIcon />}
                             >
                                 Sign in
                             </Button>
-                        </MenuItem>
-                    </Drawer>
+                            <Button
+                                component={Link}
+                                href="/sign-up"
+                                color="primary"
+                                variant="contained"
+                                size="small"
+                            >
+                                Sign up
+                            </Button>
+                        </>
+                    )}
+                    <ColorModeIconDropdown />
+                </Box>
+
+                <Box sx={{ display: { xs: "flex", md: "none" }, gap: 1 }}>
+                    <ColorModeIconDropdown size="medium" />
                 </Box>
             </StyledToolbar>
         </MuiAppBar>
