@@ -10,8 +10,8 @@ import ContactsTable from "./components/ContactsTable";
 import AddContactDialog, { Profile } from "./components/AddContactDialog";
 import TransferOwnershipDialog, {
     Organization,
-    Contact,
 } from "./components/TransferOwnershipDialog";
+import type { Contact } from "./types";
 
 export default function Contacts() {
     const [user, setUser] = useState<User | null>(null);
@@ -47,7 +47,7 @@ export default function Contacts() {
     const fetchUsers = useCallback(async () => {
         const { data, error } = await supabaseClient
             .from("profiles")
-            .select("id, full_name, email");
+            .select("id, first_name, last_name, email");
 
         if (error) {
             console.error(error);
@@ -102,7 +102,8 @@ export default function Contacts() {
             {
                 owner_id: user.id,
                 email: selectedUser.email,
-                full_name: selectedUser.full_name,
+                first_name: selectedUser.first_name,
+                last_name: selectedUser.last_name,
             },
         ]);
 
@@ -138,12 +139,17 @@ export default function Contacts() {
     /* Filter users for Add Contact modal */
     const filteredUsers = useMemo(() => {
         return availableUsers.filter((u) => {
+            const fullName = `${u.first_name} ${u.last_name}`;
+
             const notAlreadyContact = !contacts.some(
                 (c) => c.email === u.email,
             );
+
             const matchesSearch =
-                u.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                u.email.toLowerCase().includes(searchTerm.toLowerCase());
+                fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (u.email ?? "")
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase());
 
             return notAlreadyContact && matchesSearch;
         });

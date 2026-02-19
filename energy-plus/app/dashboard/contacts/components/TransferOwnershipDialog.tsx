@@ -12,17 +12,12 @@ import {
     Box,
 } from "@mui/material";
 
+import type { Contact } from "../types";
+
 export type Organization = {
     id: string | number;
     name: string;
     created_by: string | number;
-};
-
-export type Contact = {
-    id: string | number;
-    full_name: string;
-    email: string;
-    owner_id: string | number;
 };
 
 type TransferOwnershipDialogProps = {
@@ -87,7 +82,7 @@ export default function TransferOwnershipDialog({
                                     key={contact.id}
                                     value={contact.owner_id}
                                 >
-                                    {contact.full_name}
+                                    {contact.first_name} {contact.last_name}
                                 </MenuItem>
                             ))}
                         </Select>

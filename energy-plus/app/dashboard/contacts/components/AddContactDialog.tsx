@@ -11,7 +11,8 @@ import {
 
 export type Profile = {
     id: string;
-    full_name: string;
+    first_name: string;
+    last_name: string;
     email: string;
 };
 
@@ -51,7 +52,9 @@ export default function AddContactDialog({
                         sx={{ p: 2, mb: 1, cursor: "pointer" }}
                         onClick={() => onAdd(user)}
                     >
-                        <Typography>{user.full_name}</Typography>
+                        <Typography>
+                            {user.first_name} {user.last_name}
+                        </Typography>
                         <Typography variant="body2" color="text.secondary">
                             {user.email}
                         </Typography>

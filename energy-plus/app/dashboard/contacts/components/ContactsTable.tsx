@@ -8,11 +8,7 @@ import {
     Paper,
 } from "@mui/material";
 
-export type Contact = {
-    id: string | number;
-    full_name: string;
-    email: string;
-};
+import type { Contact } from "../types";
 
 type ContactsTableProps = {
     contacts: Contact[];
@@ -31,7 +27,9 @@ export default function ContactsTable({ contacts }: ContactsTableProps) {
                 <TableBody>
                     {contacts.map((contact) => (
                         <TableRow key={contact.id}>
-                            <TableCell>{contact.full_name}</TableCell>
+                            <TableCell>
+                                {contact.first_name} {contact.last_name}
+                            </TableCell>
                             <TableCell>{contact.email}</TableCell>
                         </TableRow>
                     ))}
