@@ -7,11 +7,10 @@ import { Box, Button, Container, Typography } from "@mui/material";
 import { Add, SwapHoriz } from "@mui/icons-material";
 
 import ContactsTable from "./components/ContactsTable";
-import AddContactDialog, { Profile } from "./components/AddContactDialog";
-import TransferOwnershipDialog, {
-    Organization,
-} from "./components/TransferOwnershipDialog";
-import type { Contact } from "./types";
+import AddContactDialog from "./components/AddContactDialog";
+import TransferOwnershipDialog from "./components/TransferOwnershipDialog";
+
+import type { Contact, Profile, Organization } from "./types";
 
 export default function Contacts() {
     const [user, setUser] = useState<User | null>(null);
@@ -24,10 +23,10 @@ export default function Contacts() {
     const [showTransferModal, setShowTransferModal] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState("");
-    const [transferTo, setTransferTo] = useState<string | number>("");
-    const [transferItem, setTransferItem] = useState<string | number>("");
+    const [transferTo, setTransferTo] = useState<string>("");
+    const [transferItem, setTransferItem] = useState<string>("");
 
-    /* Fetch */
+    /* ---------------- FETCH CONTACTS ---------------- */
     const fetchContacts = useCallback(async () => {
         if (!user) return;
 
@@ -44,10 +43,12 @@ export default function Contacts() {
         setContacts(data ?? []);
     }, [user]);
 
+    /* ---------------- FETCH USERS ---------------- */
     const fetchUsers = useCallback(async () => {
         const { data, error } = await supabaseClient
             .from("profiles")
-            .select("id, first_name, last_name, email");
+            .select("id, first_name, last_name, email")
+            .not("email", "is", null);
 
         if (error) {
             console.error(error);
@@ -57,6 +58,7 @@ export default function Contacts() {
         setAvailableUsers(data ?? []);
     }, []);
 
+    /* ---------------- FETCH ORGS ---------------- */
     const fetchOrganizations = useCallback(async () => {
         if (!user) return;
 
@@ -73,7 +75,7 @@ export default function Contacts() {
         setOrganizations(data ?? []);
     }, [user]);
 
-    /* Get logged in user */
+    /* ---------------- AUTH ---------------- */
     useEffect(() => {
         const getUser = async () => {
             const { data } = await supabaseClient.auth.getUser();
@@ -82,7 +84,7 @@ export default function Contacts() {
         getUser();
     }, []);
 
-    /* Load data when user is ready */
+    /* ---------------- LOAD DATA ---------------- */
     useEffect(() => {
         if (!user) return;
 
@@ -91,10 +93,11 @@ export default function Contacts() {
             await fetchUsers();
             await fetchOrganizations();
         };
+
         loadData();
     }, [user, fetchContacts, fetchUsers, fetchOrganizations]);
 
-    /* Handlers */
+    /* ---------------- ADD CONTACT ---------------- */
     const handleAddContact = async (selectedUser: Profile) => {
         if (!user) return;
 
@@ -116,12 +119,29 @@ export default function Contacts() {
         setShowAddModal(false);
     };
 
+    /* EMAIL → PROFILE LOOKUP */
+    const getProfileIdByEmail = useCallback(
+        (email: string) => {
+            const profile = availableUsers.find((u) => u.email === email);
+            return profile?.id ?? null;
+        },
+        [availableUsers],
+    );
+
+    /* ---------------- TRANSFER OWNERSHIP ---------------- */
     const handleTransferOwnership = async () => {
         if (!user || !transferTo || !transferItem) return;
 
+        const targetProfileId = getProfileIdByEmail(transferTo);
+
+        if (!targetProfileId) {
+            console.error("Could not find profile for email");
+            return;
+        }
+
         const { error } = await supabaseClient
             .from("organizations")
-            .update({ created_by: transferTo })
+            .update({ created_by: targetProfileId })
             .eq("id", transferItem)
             .eq("created_by", user.id);
 
@@ -136,7 +156,7 @@ export default function Contacts() {
         setTransferTo("");
     };
 
-    /* Filter users for Add Contact modal */
+    /* ---------------- FILTER USERS ---------------- */
     const filteredUsers = useMemo(() => {
         return availableUsers.filter((u) => {
             const fullName = `${u.first_name} ${u.last_name}`;
@@ -155,7 +175,7 @@ export default function Contacts() {
         });
     }, [availableUsers, contacts, searchTerm]);
 
-    /* UI */
+    /* ---------------- UI ---------------- */
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Box sx={{ mb: 4 }}>
@@ -184,10 +204,8 @@ export default function Contacts() {
                 </Button>
             </Box>
 
-            {/* Contacts Table */}
             <ContactsTable contacts={contacts} />
 
-            {/* Add Contact Modal */}
             <AddContactDialog
                 open={showAddModal}
                 onClose={() => setShowAddModal(false)}
@@ -197,7 +215,6 @@ export default function Contacts() {
                 onAdd={handleAddContact}
             />
 
-            {/* Transfer Ownership Modal */}
             <TransferOwnershipDialog
                 open={showTransferModal}
                 onClose={() => setShowTransferModal(false)}

@@ -12,23 +12,17 @@ import {
     Box,
 } from "@mui/material";
 
-import type { Contact } from "../types";
+import type { Organization, Contact } from "../types";
 
-export type Organization = {
-    id: string | number;
-    name: string;
-    created_by: string | number;
-};
-
-type TransferOwnershipDialogProps = {
+type Props = {
     open: boolean;
     onClose: () => void;
     organizations: Organization[];
     contacts: Contact[];
-    transferItem: string | number;
-    setTransferItem: (value: string | number) => void;
-    transferTo: string | number;
-    setTransferTo: (value: string | number) => void;
+    transferItem: string;
+    setTransferItem: (value: string) => void;
+    transferTo: string;
+    setTransferTo: (value: string) => void;
     onConfirm: () => void;
 };
 
@@ -42,7 +36,7 @@ export default function TransferOwnershipDialog({
     transferTo,
     setTransferTo,
     onConfirm,
-}: TransferOwnershipDialogProps) {
+}: Props) {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle>Transfer Ownership</DialogTitle>
@@ -80,7 +74,7 @@ export default function TransferOwnershipDialog({
                             {contacts.map((contact) => (
                                 <MenuItem
                                     key={contact.id}
-                                    value={contact.owner_id}
+                                    value={contact.email}
                                 >
                                     {contact.first_name} {contact.last_name}
                                 </MenuItem>
