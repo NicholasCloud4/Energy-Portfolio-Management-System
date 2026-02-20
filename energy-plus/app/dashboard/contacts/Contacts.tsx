@@ -109,29 +109,27 @@ export default function Contacts() {
     }, [user, fetchContacts, fetchUsers, fetchOrganizations]);
 
     /* ---------------- ADD CONTACT ---------------- */
-    const handleAddContact = async (contact: {
-        first_name: string;
-        last_name: string;
-        email: string;
-    }) => {
+    const handleAddContact = async (email: string) => {
         if (!user) return;
 
-        const { error } = await supabaseClient.from("contacts").insert([
-            {
-                owner_id: user.id,
-                first_name: contact.first_name,
-                last_name: contact.last_name,
-                email: contact.email,
-            },
-        ]);
+        try {
+            const res = await fetch("/api/contacts/addContact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, ownerId: user.id }),
+            });
 
-        if (error) {
-            console.error(error);
-            return;
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to add contact");
+            }
+
+            // Refresh contacts
+            await fetchContacts();
+        } catch (err: any) {
+            throw new Error(err.message || "Failed to add contact");
         }
-
-        await fetchContacts();
-        setShowAddModal(false);
     };
 
     /* ---------------- REMOVE CONTACT ---------------- */
@@ -213,7 +211,7 @@ export default function Contacts() {
                     startIcon={<Add />}
                     onClick={() => setShowAddModal(true)}
                 >
-                    Add Contact
+                    Add Existing User
                 </Button>
 
                 <Button
