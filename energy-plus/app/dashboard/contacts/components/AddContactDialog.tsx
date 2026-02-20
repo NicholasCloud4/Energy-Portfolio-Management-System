@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
     Dialog,
     DialogTitle,
@@ -5,64 +8,94 @@ import {
     DialogActions,
     TextField,
     Button,
-    Paper,
-    Typography,
+    Stack,
 } from "@mui/material";
-
-export type Profile = {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-};
 
 type AddContactDialogProps = {
     open: boolean;
-    onClose: () => void;
-    searchTerm: string;
-    setSearchTerm: (value: string) => void;
-    filteredUsers: Profile[];
-    onAdd: (user: Profile) => void;
+    onCloseAction: () => void;
+    onAddAction: (contact: {
+        first_name: string;
+        last_name: string;
+        email: string;
+    }) => Promise<void>;
+};
+
+const EMPTY_FORM = {
+    first_name: "",
+    last_name: "",
+    email: "",
 };
 
 export default function AddContactDialog({
     open,
-    onClose,
-    searchTerm,
-    setSearchTerm,
-    filteredUsers,
-    onAdd,
+    onCloseAction,
+    onAddAction,
 }: AddContactDialogProps) {
-    return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Add Existing User</DialogTitle>
-            <DialogContent>
-                <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Search users"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    sx={{ mb: 2 }}
-                />
+    const [form, setForm] = useState(EMPTY_FORM);
+    const [saving, setSaving] = useState(false);
 
-                {filteredUsers.map((user) => (
-                    <Paper
-                        key={user.id}
-                        sx={{ p: 2, mb: 1, cursor: "pointer" }}
-                        onClick={() => onAdd(user)}
-                    >
-                        <Typography>
-                            {user.first_name} {user.last_name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            {user.email}
-                        </Typography>
-                    </Paper>
-                ))}
+    const handleChange = (field: string, value: string) => {
+        setForm((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleClose = () => {
+        setForm(EMPTY_FORM);
+        onCloseAction();
+    };
+
+    const handleSubmit = async () => {
+        if (!form.first_name || !form.last_name || !form.email) return;
+
+        setSaving(true);
+        await onAddAction(form);
+        setSaving(false);
+        setForm(EMPTY_FORM);
+    };
+
+    return (
+        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+            <DialogTitle>Add Contact</DialogTitle>
+
+            <DialogContent>
+                <Stack spacing={2} sx={{ mt: 1 }}>
+                    <TextField
+                        label="First Name"
+                        fullWidth
+                        value={form.first_name}
+                        onChange={(e) =>
+                            handleChange("first_name", e.target.value)
+                        }
+                    />
+
+                    <TextField
+                        label="Last Name"
+                        fullWidth
+                        value={form.last_name}
+                        onChange={(e) =>
+                            handleChange("last_name", e.target.value)
+                        }
+                    />
+
+                    <TextField
+                        label="Email"
+                        type="email"
+                        fullWidth
+                        value={form.email}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                    />
+                </Stack>
             </DialogContent>
+
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={handleClose}>Cancel</Button>
+                <Button
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={saving}
+                >
+                    Save
+                </Button>
             </DialogActions>
         </Dialog>
     );

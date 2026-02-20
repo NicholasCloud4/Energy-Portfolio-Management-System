@@ -1,9 +1,18 @@
 "use client";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabaseClient } from "@/lib/supabaseClient";
 
-import { Box, Button, Container, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Typography,
+} from "@mui/material";
 import { Add, SwapHoriz } from "@mui/icons-material";
 
 import ContactsTable from "./components/ContactsTable";
@@ -22,9 +31,11 @@ export default function Contacts() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showTransferModal, setShowTransferModal] = useState(false);
 
-    const [searchTerm, setSearchTerm] = useState("");
     const [transferTo, setTransferTo] = useState<string>("");
     const [transferItem, setTransferItem] = useState<string>("");
+
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [contactToDelete, setContactToDelete] = useState<string | null>(null);
 
     /* ---------------- FETCH CONTACTS ---------------- */
     const fetchContacts = useCallback(async () => {
@@ -98,15 +109,19 @@ export default function Contacts() {
     }, [user, fetchContacts, fetchUsers, fetchOrganizations]);
 
     /* ---------------- ADD CONTACT ---------------- */
-    const handleAddContact = async (selectedUser: Profile) => {
+    const handleAddContact = async (contact: {
+        first_name: string;
+        last_name: string;
+        email: string;
+    }) => {
         if (!user) return;
 
         const { error } = await supabaseClient.from("contacts").insert([
             {
                 owner_id: user.id,
-                email: selectedUser.email,
-                first_name: selectedUser.first_name,
-                last_name: selectedUser.last_name,
+                first_name: contact.first_name,
+                last_name: contact.last_name,
+                email: contact.email,
             },
         ]);
 
@@ -119,6 +134,32 @@ export default function Contacts() {
         setShowAddModal(false);
     };
 
+    /* ---------------- REMOVE CONTACT ---------------- */
+
+    const handleRequestRemoveContact = (contactId: string) => {
+        setContactToDelete(contactId);
+        setConfirmOpen(true);
+    };
+
+    const handleRemoveContact = async () => {
+        if (!user || !contactToDelete) return;
+
+        const { error } = await supabaseClient
+            .from("contacts")
+            .delete()
+            .eq("id", contactToDelete)
+            .eq("owner_id", user.id);
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        setContacts((prev) => prev.filter((c) => c.id !== contactToDelete));
+        setConfirmOpen(false);
+        setContactToDelete(null);
+    };
+
     /* EMAIL → PROFILE LOOKUP */
     const getProfileIdByEmail = useCallback(
         (email: string) => {
@@ -128,7 +169,7 @@ export default function Contacts() {
         [availableUsers],
     );
 
-    /* ---------------- TRANSFER OWNERSHIP ---------------- */
+    /* ---------------- TRANSFER OWNERSHIP (kept for later) ---------------- */
     const handleTransferOwnership = async () => {
         if (!user || !transferTo || !transferItem) return;
 
@@ -156,25 +197,6 @@ export default function Contacts() {
         setTransferTo("");
     };
 
-    /* ---------------- FILTER USERS ---------------- */
-    const filteredUsers = useMemo(() => {
-        return availableUsers.filter((u) => {
-            const fullName = `${u.first_name} ${u.last_name}`;
-
-            const notAlreadyContact = !contacts.some(
-                (c) => c.email === u.email,
-            );
-
-            const matchesSearch =
-                fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (u.email ?? "")
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase());
-
-            return notAlreadyContact && matchesSearch;
-        });
-    }, [availableUsers, contacts, searchTerm]);
-
     /* ---------------- UI ---------------- */
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -191,7 +213,7 @@ export default function Contacts() {
                     startIcon={<Add />}
                     onClick={() => setShowAddModal(true)}
                 >
-                    Add Existing User
+                    Add Contact
                 </Button>
 
                 <Button
@@ -204,17 +226,18 @@ export default function Contacts() {
                 </Button>
             </Box>
 
-            <ContactsTable contacts={contacts} />
+            <ContactsTable
+                contacts={contacts}
+                onRemoveAction={handleRequestRemoveContact}
+            />
 
             <AddContactDialog
                 open={showAddModal}
-                onClose={() => setShowAddModal(false)}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                filteredUsers={filteredUsers}
-                onAdd={handleAddContact}
+                onCloseAction={() => setShowAddModal(false)}
+                onAddAction={handleAddContact}
             />
 
+            {/* kept for later */}
             <TransferOwnershipDialog
                 open={showTransferModal}
                 onClose={() => setShowTransferModal(false)}
@@ -226,6 +249,28 @@ export default function Contacts() {
                 setTransferTo={setTransferTo}
                 onConfirm={handleTransferOwnership}
             />
+
+            <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+                <DialogTitle>Remove Contact?</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to remove this contact? This
+                        action cannot be undone.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setConfirmOpen(false)}>
+                        Cancel
+                    </Button>
+                    <Button
+                        color="error"
+                        variant="contained"
+                        onClick={handleRemoveContact}
+                    >
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 }
