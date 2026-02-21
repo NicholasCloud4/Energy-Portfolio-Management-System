@@ -17,7 +17,6 @@ export async function POST(req: Request) {
                     username,
                     first_name,
                     last_name,
-                    full_name: `${first_name} ${last_name}`,
                     account_type: "user",
                 },
                 { onConflict: "id" }
