@@ -1,4 +1,5 @@
 'use client';
+
 import { useRouter, usePathname } from 'next/navigation';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -8,6 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import PeopleIcon from '@mui/icons-material/People';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
@@ -18,11 +20,13 @@ export default function MenuContent() {
     const pathname = usePathname();
 
     const mainListItems = [
-        { text: 'Home', icon: <HomeIcon />, path: '/dashboard/home' },
+        { text: 'Overview', icon: <HomeIcon />, path: '/dashboard/overview' },
         { text: 'Profile', icon: <PersonIcon />, path: '/dashboard/profile' },
+        { text: 'Log Energy', icon: <FlashOnIcon />, path: '/dashboard/energy'},
         { text: "Contacts", icon: <ContactsIcon />, path: "/dashboard/contacts" },
         { text: 'Users', icon: <PeopleIcon />, path: '/dashboard/users' },
         { text: 'Analytics', icon: <AnalyticsIcon />, path: '/dashboard/analytics' },
+        { text: 'Properties', icon: <AnalyticsIcon />, path: '/dashboard/properties' },
     ];
 
     const secondaryListItems = [
