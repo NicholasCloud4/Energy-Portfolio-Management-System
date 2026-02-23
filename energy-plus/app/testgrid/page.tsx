@@ -3,16 +3,14 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import TestGridComponent, { Task } from './TestGrid';
-import { supabase } from '@/lib/supabaseClient'; // adjust path if needed
-
+import { supabaseClient } from '@/lib/supabaseClient';
 export default function Page() {
     const [rows, setRows] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Example of how you can display data from supabase. If RLS is enabled you need to integrade policies. In this example RLS is not enabled.
     useEffect(() => {
         const fetchTasks = async () => {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('tasks')
                 .select('id, name, status');
 
