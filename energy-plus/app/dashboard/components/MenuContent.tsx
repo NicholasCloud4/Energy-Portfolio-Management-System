@@ -8,6 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
+import ContactsIcon from '@mui/icons-material/Contacts';
 import PeopleIcon from '@mui/icons-material/People';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
@@ -19,6 +20,7 @@ export default function MenuContent() {
     const mainListItems = [
         { text: 'Home', icon: <HomeIcon />, path: '/dashboard/home' },
         { text: 'Profile', icon: <PersonIcon />, path: '/dashboard/profile' },
+        { text: "Contacts", icon: <ContactsIcon />, path: "/dashboard/contacts" },
         { text: 'Users', icon: <PeopleIcon />, path: '/dashboard/users' },
         { text: 'Analytics', icon: <AnalyticsIcon />, path: '/dashboard/analytics' },
     ];
