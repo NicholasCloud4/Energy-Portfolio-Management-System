@@ -2,10 +2,9 @@ import { Box, Typography, CircularProgress, alpha } from "@mui/material";
 
 interface ScoreDialProps {
     value: number;
-    size?: number;
 }
 
-export default function RadialDial({ value, size = 120 }: ScoreDialProps) {
+export default function RadialDial({ value }: ScoreDialProps) {
     // Determine colors based on value
     const getColors = () => {
         let baseColor = "#4caf50"; // green
@@ -27,7 +26,7 @@ export default function RadialDial({ value, size = 120 }: ScoreDialProps) {
             <CircularProgress
                 variant="determinate"
                 value={value}
-                size={size}
+                size={120}
                 thickness={5}
                 sx={{
                     color: colors.main,
