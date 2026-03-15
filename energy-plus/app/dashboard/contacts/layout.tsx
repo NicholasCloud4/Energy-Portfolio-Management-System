@@ -21,7 +21,7 @@ import TransferOwnershipDialog from "./components/TransferOwnershipDialog";
 
 import type { Contact, Profile, Organization } from "./types";
 
-export default function Contacts() {
+export default function Layout() {
     const [user, setUser] = useState<User | null>(null);
 
     const [contacts, setContacts] = useState<Contact[]>([]);
