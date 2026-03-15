@@ -1,5 +1,5 @@
-import SignIn from "./SignIn";
+import Layout from "./layout";
 
 export default function Page() {
-    return <SignIn />;
+    return <Layout />;
 }

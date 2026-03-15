@@ -1,7 +1,7 @@
 // Page that loads and displays the SignUp component.
 
-import SignUp from "./SignUp";
+import Layout from "./layout";
 
 export default function Page() {
-    return <SignUp />;
+    return <Layout />;
 }
