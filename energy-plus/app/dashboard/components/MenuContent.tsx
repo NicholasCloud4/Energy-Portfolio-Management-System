@@ -21,7 +21,7 @@ export default function MenuContent() {
 
     const mainListItems = [
         { text: 'Overview', icon: <HomeIcon />, path: '/dashboard/overview' },
-        { text: 'Profile', icon: <PersonIcon />, path: '/dashboard/profile' },
+        { text: 'Organizations', icon: <PersonIcon />, path: '/dashboard/organizations' },
         { text: 'Log Energy', icon: <FlashOnIcon />, path: '/dashboard/energy'},
         { text: "Contacts", icon: <ContactsIcon />, path: "/dashboard/contacts" },
         { text: 'Users', icon: <PeopleIcon />, path: '/dashboard/users' },
