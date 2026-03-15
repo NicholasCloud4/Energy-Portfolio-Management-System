@@ -60,7 +60,7 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export default function SignIn(props: { disableCustomTheme?: boolean }) {
+export default function Layout(props: { disableCustomTheme?: boolean }) {
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
     const [passwordError, setPasswordError] = React.useState(false);
@@ -97,15 +97,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         } else {
             setEmailError(false);
             setEmailErrorMessage('');
-        }
-
-        if (!password?.value || password.value.length < 6) {
-            setPasswordError(true);
-            setPasswordErrorMessage('Password must be at least 6 characters long.');
-            isValid = false;
-        } else {
-            setPasswordError(false);
-            setPasswordErrorMessage('');
         }
 
         return isValid;

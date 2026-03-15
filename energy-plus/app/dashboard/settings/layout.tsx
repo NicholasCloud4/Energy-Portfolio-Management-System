@@ -6,42 +6,39 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
 import {supabaseClient} from '@/lib/supabaseClient';
+import ChangePassword from './components/ChangePassword';
+import ChangeUsername from './components/ChangeUsername';
 
 
 type ProfileFormData = {
     firstName: string;
     lastName: string;
     email: string;
+    username: string;
     password: string;
     confirmPassword: string;
 };
 //Profile settings page to allow user to change their password, will implement email change in the future.
 export default function ProfileSettings() {
     const supabase = supabaseClient;
-    const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     const {
-        register,
-        handleSubmit,
         formState: { errors},
         reset,
         watch,
-        setValue
     } = useForm<ProfileFormData>({
         defaultValues: {
             firstName: '',
             lastName: '',
             email: '',
+            username: '',
             password: '',
             confirmPassword: ''
         },
     });
 
-    //watches password field to compare it with confirm password field.
-    const newPassword = watch ('password');
 
     useEffect(() => {
         let isCurrent = true;
@@ -57,7 +54,7 @@ export default function ProfileSettings() {
                 //fetches data from profile table, selects first name, last name and email where id matches user id, and returns a single record
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('first_name, last_name, email')
+                    .select('first_name, last_name, email, username')
                     .eq('id', user.id)
                     .single();
 
@@ -68,6 +65,7 @@ export default function ProfileSettings() {
                         firstName: data?.first_name || '',
                         lastName: data?.last_name || '',
                         email: user.email || '',
+                        username: data?.username || '',
                         password: '',
                         confirmPassword: ''
                     });
@@ -86,38 +84,6 @@ export default function ProfileSettings() {
         };
     }, [reset]);
 
-    const handleFormSubmit = async (data: ProfileFormData) => {
-        setMessage(null);
-
-        if (!data.password.trim()) {
-            setMessage({ type: 'error', text: 'Password is required' });
-            return;
-        }
-
-        if (data.password !== data.confirmPassword) {
-            setMessage({ type: 'error', text: 'Passwords do not match' });
-            return;
-        }
-
-        setIsSaving(true);
-
-        try {
-            const { error} = await supabase.auth.updateUser({
-                password: data.password,
-            });
-
-            if (error) throw error;
-            setMessage({ type: 'success', text: 'Password updated successfully' });
-            setValue('password', '');
-            setValue('confirmPassword', '');
-        } catch (error) {
-            console.log(error);
-            setMessage({ type: 'error', text: 'Error updating password' });
-
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
 
     return (
@@ -166,45 +132,19 @@ export default function ProfileSettings() {
                     variant = "outlined"
 
                 />
+                <TextField
+                    label = "Username"
+                    value = {watch('username')}
+                    disabled
+                    fullWidth
+                    variant = "outlined"
+                />
             </Box>
 
 
-            <Typography variant = "h6" gutterBottom sx={{ mt: 3, mb: 2}}>
-                Change Password
-            </Typography>
-            <Box
-                component = "form"
-                onSubmit = {handleSubmit(handleFormSubmit)}
-                sx={{ display: 'flex', flexDirection: 'column', gap : 2}}
-            >
-                <TextField
-                    {...register('password', { required: 'password must be 8 characters or more', minLength: 8})}
-                    label = "New password"
-                    type = "password"
-                    error = {!!errors.password}
-                    helperText = {errors.password ? errors.password?.message || 'Password must be at least 8 characters' : ''}
-                    fullWidth
-                />
-
-                <TextField
-                    {...register('confirmPassword', {
-                        validate: (value) => value === newPassword || !newPassword || 'Passwords do not match'
-                    })}
-                    label = "Confirm new password"
-                    type = "password"
-                    error = {!!errors.confirmPassword}
-                    helperText = {errors.confirmPassword?.message}
-                    fullWidth
-                />
-
-                <Button type = "submit"
-                        variant = "contained"
-                        disabled = {isSaving}
-                        sx={{ alignSelf: 'flex-start', px: 4, py: 1.5}}
-                >
-                    {isSaving ? 'Saving...' : 'Save Changes'}
-                </Button>
-            </Box>
+            <ChangePassword/>
+            <ChangeUsername/>
         </Box>
+
     );
 }

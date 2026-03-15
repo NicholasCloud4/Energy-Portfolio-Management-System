@@ -1,4 +1,4 @@
-import EnergyContent from './Energy';
+import EnergyContent from './layout';
 
 export default function EnergyPage() {
     return <EnergyContent />;

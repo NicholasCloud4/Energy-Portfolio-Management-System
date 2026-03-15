@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-import type { Contact } from "../types";
+import type { Contact } from "./types";
 
 type Props = {
     contacts: Contact[];

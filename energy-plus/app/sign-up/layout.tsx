@@ -58,7 +58,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export default function SignUp(props: { disableCustomTheme?: boolean }) {
+export default function Layout(props: { disableCustomTheme?: boolean }) {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [successOpen, setSuccessOpen] = React.useState(false);

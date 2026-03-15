@@ -1,10 +1,10 @@
 "use client";
-import Contacts from "./Contacts";
+import Layout from "./layout";
 
 export default function Page() {
     return (
         <>
-            <Contacts />
+            <Layout />
         </>
     );
 }
