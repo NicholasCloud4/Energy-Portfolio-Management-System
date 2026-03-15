@@ -19,7 +19,7 @@ import ContactsTable from "./components/ContactsTable";
 import AddContactDialog from "./components/AddContactDialog";
 import TransferOwnershipDialog from "./components/TransferOwnershipDialog";
 
-import type { Contact, Profile, Organization } from "./types";
+import type { Contact, Profile, Organization } from "./components/types";
 
 export default function Layout() {
     const [user, setUser] = useState<User | null>(null);

@@ -12,7 +12,7 @@ import {
     Box,
 } from "@mui/material";
 
-import type { Organization, Contact } from "../types";
+import type { Organization, Contact } from "./types";
 
 type Props = {
     open: boolean;
