@@ -27,7 +27,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
 
-import AppAppBar from "../../landing-page/components/AppAppBar";
+import FeatureSection from "../../landing-page/components/FeatureSection";
 import { supabaseClient } from "../../../lib/supabaseClient";
 
 /**
