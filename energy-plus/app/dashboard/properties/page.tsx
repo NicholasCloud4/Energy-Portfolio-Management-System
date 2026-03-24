@@ -24,15 +24,10 @@ import {
     Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import AddIcon from "@mui/icons-material/Add";
 
-import AppAppBar from "../../landing-page/components/AppAppBar";
 import { supabaseClient } from "../../../lib/supabaseClient";
+import AddPropertyButton from "./components/AddProppertyButton";
 
-/**
- * 50 states + DC (51 options)
- */
 const US_STATES_PLUS_DC = [
     "Alabama",
     "Alaska",
@@ -89,19 +84,6 @@ const US_STATES_PLUS_DC = [
 
 type PropertyType = "Commercial" | "Residential" | "Office";
 
-/**
- * Matches your Supabase `properties` table (per your screenshot):
- * id uuid
- * organization_id uuid
- * street text
- * sq_ft numeric
- * property_type text
- * created_at timestamptz
- * city text
- * state text
- * zip int8
- * jurisdiction_id uuid
- */
 type PropertyRow = {
     id: string;
     organization_id: string;
@@ -115,18 +97,18 @@ type PropertyRow = {
     created_at?: string | null;
 };
 
-type NewProperty = {
+type PropertyForm = {
     organization_id: string;
     jurisdiction_id: string;
     street: string;
     city: string;
     state: string;
-    zip: string; // input as string, convert to number on save
-    sq_ft: string; // input as string, convert to number on save
+    zip: string;
+    sq_ft: string;
     property_type: PropertyType;
 };
 
-const emptyForm: NewProperty = {
+const emptyForm: PropertyForm = {
     organization_id: "",
     jurisdiction_id: "",
     street: "",
@@ -141,14 +123,16 @@ export default function PropertiesPage() {
     const [rows, setRows] = React.useState<PropertyRow[]>([]);
     const [loading, setLoading] = React.useState(true);
 
-    const [addOpen, setAddOpen] = React.useState(false);
-    const [form, setForm] = React.useState<NewProperty>(emptyForm);
+    const [formOpen, setFormOpen] = React.useState(false);
+    const [formMode, setFormMode] = React.useState<"add" | "edit">("add");
+    const [editingId, setEditingId] = React.useState<string | null>(null);
+    const [form, setForm] = React.useState<PropertyForm>(emptyForm);
     const [saving, setSaving] = React.useState(false);
 
     const [viewOpen, setViewOpen] = React.useState(false);
     const [selected, setSelected] = React.useState<PropertyRow | null>(null);
 
-    const [errorText, setErrorText] = React.useState<string>("");
+    const [errorText, setErrorText] = React.useState("");
 
     const loadProperties = React.useCallback(async () => {
         setErrorText("");
@@ -189,19 +173,42 @@ export default function PropertiesPage() {
 
     const openAdd = () => {
         setErrorText("");
+        setFormMode("add");
+        setEditingId(null);
         setForm(emptyForm);
-        setAddOpen(true);
+        setFormOpen(true);
     };
 
-    const closeAdd = () => {
-        setAddOpen(false);
+    const openEdit = (row: PropertyRow) => {
+        setErrorText("");
+        setFormMode("edit");
+        setEditingId(row.id);
+        setForm({
+            organization_id: row.organization_id ?? "",
+            jurisdiction_id: row.jurisdiction_id ?? "",
+            street: row.street ?? "",
+            city: row.city ?? "",
+            state: row.state ?? "",
+            zip: row.zip?.toString() ?? "",
+            sq_ft: row.sq_ft?.toString() ?? "",
+            property_type: (row.property_type as PropertyType) || "Residential",
+        });
+        setFormOpen(true);
+    };
+
+    const closeForm = () => {
+        setFormOpen(false);
+        setEditingId(null);
         setForm(emptyForm);
     };
 
     const onChange =
-        (key: keyof NewProperty) =>
+        (key: keyof PropertyForm) =>
             (e: React.ChangeEvent<HTMLInputElement>) => {
-                setForm((prev) => ({ ...prev, [key]: e.target.value }));
+                setForm((prev) => ({
+                    ...prev,
+                    [key]: e.target.value,
+                }));
             };
 
     const canSave =
@@ -209,22 +216,24 @@ export default function PropertiesPage() {
         form.street.trim().length > 2 &&
         form.property_type.length > 0;
 
+    const buildPayload = () => ({
+        organization_id: form.organization_id.trim(),
+        jurisdiction_id: form.jurisdiction_id.trim() || null,
+        street: form.street.trim() || null,
+        city: form.city.trim() || null,
+        state: form.state.trim() || null,
+        zip: form.zip.trim() ? Number(form.zip) : null,
+        sq_ft: form.sq_ft.trim() ? Number(form.sq_ft) : null,
+        property_type: form.property_type,
+    });
+
     const addProperty = async () => {
         if (!canSave) return;
 
         setErrorText("");
         setSaving(true);
 
-        const payload = {
-            organization_id: form.organization_id.trim(),
-            jurisdiction_id: form.jurisdiction_id.trim() || null,
-            street: form.street.trim() || null,
-            city: form.city.trim() || null,
-            state: form.state.trim() || null,
-            zip: form.zip.trim() ? Number(form.zip) : null,
-            sq_ft: form.sq_ft.trim() ? Number(form.sq_ft) : null,
-            property_type: form.property_type,
-        };
+        const payload = buildPayload();
 
         const { data, error } = await supabaseClient
             .from("properties")
@@ -243,7 +252,51 @@ export default function PropertiesPage() {
 
         setRows((prev) => [data as PropertyRow, ...prev]);
         setSaving(false);
-        closeAdd();
+        closeForm();
+    };
+
+    const updateProperty = async () => {
+        if (!canSave || !editingId) return;
+
+        setErrorText("");
+        setSaving(true);
+
+        const payload = buildPayload();
+
+        const { data, error } = await supabaseClient
+            .from("properties")
+            .update(payload)
+            .eq("id", editingId)
+            .select(
+                "id,organization_id,jurisdiction_id,street,city,state,zip,sq_ft,property_type,created_at"
+            )
+            .single();
+
+        if (error) {
+            console.error("Update error:", error.message);
+            setErrorText(error.message);
+            setSaving(false);
+            return;
+        }
+
+        setRows((prev) =>
+            prev.map((row) => (row.id === editingId ? (data as PropertyRow) : row))
+        );
+
+        if (selected?.id === editingId) {
+            setSelected(data as PropertyRow);
+        }
+
+        setSaving(false);
+        closeForm();
+    };
+
+    const handleSave = async () => {
+        if (formMode === "add") {
+            await addProperty();
+        } else {
+            await updateProperty();
+        }
     };
 
     const removeProperty = async (row: PropertyRow) => {
@@ -254,15 +307,17 @@ export default function PropertiesPage() {
 
         setErrorText("");
 
-        // Optimistic UI remove
         setRows((prev) => prev.filter((p) => p.id !== row.id));
 
-        const { error } = await supabaseClient.from("properties").delete().eq("id", row.id);
+        const { error } = await supabaseClient
+            .from("properties")
+            .delete()
+            .eq("id", row.id);
 
         if (error) {
             console.error("Delete error:", error.message);
             setErrorText(error.message);
-            await loadProperties(); // rollback
+            await loadProperties();
         }
 
         if (selected?.id === row.id) closeView();
@@ -270,11 +325,7 @@ export default function PropertiesPage() {
 
     return (
         <>
-
-
-            {/* Page container; top padding accounts for fixed AppBar */}
             <Container maxWidth="lg" sx={{ pt: 14, pb: 6 }}>
-                {/* Centered header + content container */}
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
                     <Box sx={{ width: "100%", maxWidth: 980 }}>
                         <Stack
@@ -293,13 +344,7 @@ export default function PropertiesPage() {
                                 </Typography>
                             </Box>
 
-                            <Button
-                                onClick={openAdd}
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                            >
-                                Add Property
-                            </Button>
+                            <AddPropertyButton onClick={openAdd} />
                         </Stack>
 
                         {errorText ? (
@@ -330,9 +375,6 @@ export default function PropertiesPage() {
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                     Add your first property to start tracking energy usage.
                                 </Typography>
-                                <Button variant="contained" onClick={openAdd}>
-                                    Add Property
-                                </Button>
                             </Box>
                         ) : (
                             <Box
@@ -365,12 +407,11 @@ export default function PropertiesPage() {
                                                 <TableCell align="right">{row.sq_ft ?? "—"}</TableCell>
 
                                                 <TableCell align="right">
-                                                    <IconButton aria-label="view" onClick={() => openView(row)}>
-                                                        <VisibilityIcon />
-                                                    </IconButton>
+                                                    <button onClick={() => openEdit(row)}>Edit</button>
                                                     <IconButton
                                                         aria-label="delete"
                                                         onClick={() => removeProperty(row)}
+                                                        title="Delete property"
                                                     >
                                                         <DeleteIcon />
                                                     </IconButton>
@@ -385,9 +426,11 @@ export default function PropertiesPage() {
                 </Box>
             </Container>
 
-            {/* ADD DIALOG */}
-            <Dialog open={addOpen} onClose={closeAdd} fullWidth maxWidth="sm">
-                <DialogTitle>Add Property</DialogTitle>
+            <Dialog open={formOpen} onClose={closeForm} fullWidth maxWidth="sm">
+                <DialogTitle>
+                    {formMode === "add" ? "Add Property" : "Edit Property"}
+                </DialogTitle>
+
                 <DialogContent sx={{ pt: 1 }}>
                     <Stack gap={2} sx={{ mt: 1 }}>
                         <TextField
@@ -396,14 +439,14 @@ export default function PropertiesPage() {
                             onChange={onChange("organization_id")}
                             required
                             autoFocus
-                            helperText="Must match an existing organization_id in Supabase (foreign key)."
+                            helperText="Must match an existing organization_id in Supabase."
                         />
 
                         <TextField
                             label="Jurisdiction ID (uuid)"
                             value={form.jurisdiction_id}
                             onChange={onChange("jurisdiction_id")}
-                            helperText="Optional unless your DB requires it."
+                            helperText="Optional unless your database requires it."
                         />
 
                         <TextField
@@ -421,7 +464,6 @@ export default function PropertiesPage() {
                                 fullWidth
                             />
 
-                            {/* State dropdown (51 options). If you later need manual typing too, tell me and I’ll add a toggle. */}
                             <TextField
                                 label="State"
                                 value={form.state}
@@ -455,7 +497,6 @@ export default function PropertiesPage() {
                             />
                         </Stack>
 
-                        {/* Property type dropdown with 3 options */}
                         <TextField
                             label="Property Type"
                             value={form.property_type}
@@ -474,25 +515,31 @@ export default function PropertiesPage() {
                         color="text.secondary"
                         sx={{ display: "block", mt: 2 }}
                     >
-                        Note: If you get a foreign key error, your Organization ID (uuid) must
-                        match a real record in your organizations table.
+                        Note: If you get a foreign key or RLS error, your Organization ID must
+                        match a real organization the logged-in user is allowed to access.
                     </Typography>
                 </DialogContent>
+
                 <DialogActions>
-                    <Button onClick={closeAdd} disabled={saving}>
+                    <Button onClick={closeForm} disabled={saving}>
                         Cancel
                     </Button>
                     <Button
-                        onClick={addProperty}
+                        onClick={handleSave}
                         variant="contained"
                         disabled={!canSave || saving}
                     >
-                        {saving ? "Saving..." : "Save"}
+                        {saving
+                            ? formMode === "add"
+                                ? "Saving..."
+                                : "Updating..."
+                            : formMode === "add"
+                                ? "Save"
+                                : "Update"}
                     </Button>
                 </DialogActions>
             </Dialog>
 
-            {/* VIEW DRAWER */}
             <Drawer anchor="right" open={viewOpen} onClose={closeView}>
                 <Box sx={{ width: { xs: 320, sm: 420 }, p: 3 }}>
                     <Typography variant="h6" sx={{ fontWeight: 800 }}>
@@ -513,14 +560,16 @@ export default function PropertiesPage() {
                             <Field label="Sq Ft" value={selected.sq_ft?.toString() ?? "—"} />
                             <Field label="Property Type" value={selected.property_type ?? "—"} />
                             <Field label="Organization ID" value={selected.organization_id} />
-                            <Field
-                                label="Jurisdiction ID"
-                                value={selected.jurisdiction_id ?? "—"}
-                            />
 
                             <Divider sx={{ my: 2 }} />
 
                             <Stack direction="row" gap={1}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => openEdit(selected)}
+                                >
+                                    Edit
+                                </Button>
                                 <Button
                                     variant="outlined"
                                     color="error"

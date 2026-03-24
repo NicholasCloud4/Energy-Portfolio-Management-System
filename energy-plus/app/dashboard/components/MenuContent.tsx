@@ -20,13 +20,16 @@ export default function MenuContent() {
     const pathname = usePathname();
 
     const mainListItems = [
+        // User Menu
         { text: 'Overview', icon: <HomeIcon />, path: '/dashboard/overview' },
-        { text: 'Profile', icon: <PersonIcon />, path: '/dashboard/profile' },
+        { text: 'Organizations', icon: <PersonIcon />, path: '/dashboard/organizations' },
         { text: 'Log Energy', icon: <FlashOnIcon />, path: '/dashboard/energy'},
         { text: "Contacts", icon: <ContactsIcon />, path: "/dashboard/contacts" },
-        { text: 'Users', icon: <PeopleIcon />, path: '/dashboard/users' },
         { text: 'Analytics', icon: <AnalyticsIcon />, path: '/dashboard/analytics' },
         { text: 'Properties', icon: <AnalyticsIcon />, path: '/dashboard/properties' },
+        // Admin Menu
+        { text: 'Users', icon: <PeopleIcon />, path: '/dashboard/users' },
+        // Auditor Menu
     ];
 
     const secondaryListItems = [
