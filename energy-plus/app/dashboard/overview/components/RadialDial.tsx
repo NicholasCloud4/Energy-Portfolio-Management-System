@@ -44,17 +44,24 @@ export default function RadialDial({ value }: ScoreDialProps) {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    bgcolor: colors.light,
+                    bgcolor: (theme) =>
+                        hasData
+                            ? colors.light
+                            : theme.palette.mode === "light"
+                              ? theme.palette.grey[300]
+                              : theme.palette.grey[800],
                     borderRadius: "50%",
                 }}
             >
                 <Typography
                     variant="h6"
-                    sx={{
+                    sx={(theme) => ({
                         fontWeight: 600,
-                        color: colors.main,
+                        color: hasData
+                            ? colors.main
+                            : theme.palette.text.primary,
                         textAlign: "center",
-                    }}
+                    })}
                 >
                     {hasData ? displayValue : "No Usage Data"}
                 </Typography>
