@@ -23,7 +23,7 @@ export default function MenuContent() {
         // User Menu
         { text: 'Overview', icon: <HomeIcon />, path: '/dashboard/overview' },
         { text: 'Organizations', icon: <PersonIcon />, path: '/dashboard/organizations' },
-        { text: 'Log Energy', icon: <FlashOnIcon />, path: '/dashboard/energy'},
+        { text: 'Log Energy', icon: <FlashOnIcon />, path: '/dashboard/logEnergy'},
         { text: "Contacts", icon: <ContactsIcon />, path: "/dashboard/contacts" },
         { text: 'Analytics', icon: <AnalyticsIcon />, path: '/dashboard/analytics' },
         { text: 'Properties', icon: <AnalyticsIcon />, path: '/dashboard/properties' },
