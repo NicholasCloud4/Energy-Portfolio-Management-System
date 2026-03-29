@@ -1,5 +1,4 @@
 import { Box, Typography, CircularProgress, alpha } from "@mui/material";
-import { ThemeProvider } from "@mui/material/styles";
 
 interface ScoreDialProps {
     value?: number;
