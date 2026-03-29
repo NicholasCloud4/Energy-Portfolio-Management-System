@@ -1,4 +1,5 @@
 import { Box, Typography, CircularProgress, alpha } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
 
 interface ScoreDialProps {
     value?: number;
@@ -27,10 +28,16 @@ export default function RadialDial({ value }: ScoreDialProps) {
             {/* The Outer Progress Ring */}
             <CircularProgress
                 variant="determinate"
-                value={displayValue}
+                value={hasData ? displayValue : 100}
                 size={120}
                 thickness={5}
-                sx={{ color: colors.main }}
+                sx={(theme) => ({
+                    color: hasData
+                        ? colors.main
+                        : theme.palette.mode === "light"
+                          ? theme.palette.grey[400]
+                          : theme.palette.grey[600],
+                })}
             />
 
             {/* The Inner Circle and Text */}
@@ -44,12 +51,7 @@ export default function RadialDial({ value }: ScoreDialProps) {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    bgcolor: (theme) =>
-                        hasData
-                            ? colors.light
-                            : theme.palette.mode === "light"
-                              ? theme.palette.grey[300]
-                              : theme.palette.grey[800],
+                    bgcolor: hasData ? colors.light : "transparent",
                     borderRadius: "50%",
                 }}
             >
@@ -59,7 +61,9 @@ export default function RadialDial({ value }: ScoreDialProps) {
                         fontWeight: 600,
                         color: hasData
                             ? colors.main
-                            : theme.palette.text.primary,
+                            : theme.palette.mode === "dark"
+                              ? theme.palette.grey[900] // Change from 900 to 300 (or 100) for visibility
+                              : theme.palette.text.secondary,
                         textAlign: "center",
                     })}
                 >
