@@ -10,10 +10,8 @@ import Link from "next/link";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import LoginIcon from "@mui/icons-material/Login";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import CircularProgress from "@mui/material/CircularProgress";
-import Image from "next/image";
-
-import NavbarBreadcrumbs from "../dashboard/components/NavbarBreadcrumbs";
 import ColorModeIconDropdown from "../../theme/ColorModeSwitch";
 import Sitemark from "./SitemarkIcon";
 import { supabaseClient } from "@/lib/supabaseClient";
@@ -97,6 +95,8 @@ export default function AppAppBar() {
         router.push("/sign-in");
     };
 
+    const showDebugBarLabel = false;
+
     return (
         <MuiAppBar
             position="fixed"
@@ -113,21 +113,36 @@ export default function AppAppBar() {
         >
             <StyledToolbar variant="dense" disableGutters>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    {!user || isLandingPage ? <Sitemark /> : null}
+                    <Sitemark />
 
-                    {user && !isLandingPage && (
-                        <Box sx={{ display: { xs: "none", md: "flex" }, margin: "-4px 0 0 0" }}>
-                            <Image
-                                src="/logo.png"
-                                alt="Logo"
-                                width={15}
-                                height={22}
-                                priority
-                            />
-                        </Box>
+                    {showDebugBarLabel && (
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                px: 1,
+                                py: 0.25,
+                                borderRadius: 1,
+                                bgcolor: "error.main",
+                                color: "error.contrastText",
+                                fontWeight: 700,
+                            }}
+                        >
+                            APPAPPBAR TEST
+                        </Typography>
                     )}
 
-                    {user && !isLandingPage && <NavbarBreadcrumbs />}
+                    {user && isLandingPage && (
+                        <Button
+                            component={Link}
+                            href="/dashboard"
+                            color="primary"
+                            variant="text"
+                            size="small"
+                            startIcon={<DashboardIcon />}
+                        >
+                            Dashboard
+                        </Button>
+                    )}
                 </Box>
 
                 <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
@@ -144,10 +159,20 @@ export default function AppAppBar() {
                                     sx={{ width: 36, height: 36 }}
                                 />
                                 <Box>
-                                    <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: "16px" }}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            fontWeight: 500,
+                                            lineHeight: "16px",
+                                            color: "text.primary",
+                                        }}
+                                    >
                                         {profile.first_name} {profile.last_name}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{ color: "text.secondary" }}
+                                    >
                                         {profile.email}
                                     </Typography>
                                 </Box>
