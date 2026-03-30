@@ -5,8 +5,8 @@ import { Box, Card, Grid, CardContent, Typography, Button } from "@mui/material"
 import RadialDial from "./components/RadialDial";
 import SelectProperty, { Property } from "./components/SelectProperty";
 import EnergyUsage from "./components/EnergyUsage";
-import LogEnergy2 from "./components/LogEnergy2";
-import { supabaseClient } from "@/lib/supabaseClient";3
+import LogEnergy from "./components/LogEnergy"
+import { supabaseClient } from "@/lib/supabaseClient";
 
 export default function OverviewContent() {
     const [score, setScore] = useState<number | null>(null);
@@ -127,7 +127,7 @@ export default function OverviewContent() {
                                     Log Energy
                                 </Typography>
 
-                                <LogEnergy2 property={selectedProperty} />
+                                <LogEnergy property={selectedProperty} />
                             </CardContent>
                         </Card>
                     </Grid>
