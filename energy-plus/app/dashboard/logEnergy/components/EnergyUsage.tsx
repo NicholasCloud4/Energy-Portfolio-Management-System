@@ -18,6 +18,7 @@ import { supabaseClient } from "@/lib/supabaseClient";
 
 interface EnergyUsageProps {
     property: Property | null;
+    refreshKey?: number;
 }
 
 interface EnergyUsageDisplayRow {
@@ -72,7 +73,7 @@ function getEnergyTypeName(row: UsageRow): string | null {
     return typeof name === "string" ? name.toLowerCase() : null;
 }
 
-export default function EnergyUsage({ property }: EnergyUsageProps) {
+export default function EnergyUsage({ property, refreshKey }: EnergyUsageProps) {
     const [rows, setRows] = useState<EnergyUsageDisplayRow[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -208,7 +209,7 @@ export default function EnergyUsage({ property }: EnergyUsageProps) {
         }
 
         fetchEnergyUsage();
-    }, [property]);
+    }, [property, refreshKey]);
 
     if (!property) {
         return (

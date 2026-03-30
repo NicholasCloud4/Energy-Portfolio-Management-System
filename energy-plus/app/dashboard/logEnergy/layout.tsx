@@ -9,6 +9,7 @@ import LogEnergy from "./components/LogEnergy"
 import { supabaseClient } from "@/lib/supabaseClient";
 
 export default function OverviewContent() {
+    const [energyRefreshKey, setEnergyRefreshKey] = useState(0);
     const [score, setScore] = useState<number | null>(null);
     const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
     const [showLogEnergy, setShowLogEnergy] = useState(false);
@@ -127,14 +128,20 @@ export default function OverviewContent() {
                                     Log Energy
                                 </Typography>
 
-                                <LogEnergy property={selectedProperty} />
+                                <LogEnergy
+                                    property={selectedProperty}
+                                    onSuccess={() => setEnergyRefreshKey((prev) => prev + 1)}
+                                />
                             </CardContent>
                         </Card>
                     </Grid>
                 )}
 
                 <Grid size={12}>
-                    <EnergyUsage property={selectedProperty} />
+                    <EnergyUsage
+                        property={selectedProperty}
+                        refreshKey={energyRefreshKey}
+                    />
                 </Grid>
             </Grid>
         </Box>
