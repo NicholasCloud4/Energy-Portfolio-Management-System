@@ -6,7 +6,7 @@ import RadialDial from "./components/RadialDial";
 import SelectProperty, { Property } from "./components/SelectProperty";
 import EnergyUsage from "./components/EnergyUsage";
 import LogEnergy2 from "./components/LogEnergy2";
-import { supabaseClient } from "@/lib/supabaseClient";
+import { supabaseClient } from "@/lib/supabaseClient";3
 
 export default function OverviewContent() {
     const [score, setScore] = useState<number | null>(null);

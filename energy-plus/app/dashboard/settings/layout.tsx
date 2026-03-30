@@ -3,12 +3,15 @@
 import React, {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import {supabaseClient} from '@/lib/supabaseClient';
-import ChangePassword from './components/ChangePassword';
-import ChangeUsername from './components/ChangeUsername';
+import ChangePassword from './Components/ChangePassword';
+import ChangeEmail from './Components/ChangeEmail';
+import ChangeFirstName from './Components/ChangeFirstName';
+import ChangeLastName from './Components/ChangeLastName'
 
 
 type ProfileFormData = {
@@ -19,10 +22,10 @@ type ProfileFormData = {
     password: string;
     confirmPassword: string;
 };
-//Profile settings page to allow user to change their password, will implement email change in the future.
 export default function ProfileSettings() {
     const supabase = supabaseClient;
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [showEditFields, setShowEditFields] = useState(false);
 
     const {
         formState: { errors},
@@ -51,7 +54,6 @@ export default function ProfileSettings() {
                     setMessage({ type: 'error', text: 'No data, please sign in' });
                     return;
                 }
-                //fetches data from profile table, selects first name, last name and email where id matches user id, and returns a single record
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('first_name, last_name, email, username')
@@ -83,6 +85,7 @@ export default function ProfileSettings() {
             isCurrent = false;
         };
     }, [reset]);
+
 
 
 
@@ -140,11 +143,26 @@ export default function ProfileSettings() {
                     variant = "outlined"
                 />
             </Box>
+            <Box sx = {{ textAlign: 'left', mb: 3}}>
+                <Button
+                    variant = "contained"
+                    color = "primary"
+                    size = "large"
+                    onClick ={() => setShowEditFields(!showEditFields)}
+                    sx ={{px:4, py: 1.5}}
+                >
+                    {showEditFields? 'Hide edit fields' : 'Edit your personal information'}
+                </Button>
 
-
-            <ChangePassword/>
-            <ChangeUsername/>
+            </Box>
+            {showEditFields && (
+                <Box sx={{ mt: 2 }}>
+                    <ChangeFirstName />
+                    <ChangeLastName />
+                    <ChangePassword />
+                    <ChangeEmail />
+                </Box>
+            )}
         </Box>
-
     );
 }

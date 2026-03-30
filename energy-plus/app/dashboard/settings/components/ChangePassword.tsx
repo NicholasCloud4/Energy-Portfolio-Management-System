@@ -7,6 +7,11 @@ import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import {supabaseClient} from '@/lib/supabaseClient';
 
+
+
+
+
+
 type ChangePasswordFormData = {
     password: string;
     confirmPassword: string;
@@ -103,7 +108,7 @@ export default function ChangePassword() {
                 <Button type = "submit"
                         variant = "contained"
                         disabled = {isSaving}
-                        sx={{ alignSelf: 'flex-start', px: 4, py: 1.5, mb: 2}}
+                        sx={{ alignSelf: 'flex-start', mt: 0.5, mb: 2, px: 4, py: 1.5 }}
                 >
                     {isSaving ? 'Saving...' : 'Submit'}
                 </Button>
