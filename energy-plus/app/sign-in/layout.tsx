@@ -60,7 +60,7 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export default function SignIn(props: { disableCustomTheme?: boolean }) {
+export default function Layout(props: { disableCustomTheme?: boolean }) {
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
     const [passwordError, setPasswordError] = React.useState(false);
@@ -99,8 +99,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             setEmailErrorMessage('');
         }
 
-
-
         return isValid;
     };
 
@@ -108,14 +106,15 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         event.preventDefault();
         if (!validateInputs()) return;
 
-        const email = emailRef.current?.value ?? '';
-        const password = passwordRef.current?.value ?? '';
+        const email = emailRef.current?.value ?? "";
+        const password = passwordRef.current?.value ?? "";
 
         try {
-            const { data: authData, error: signInError } = await supabaseClient.auth.signInWithPassword({
-                email,
-                password,
-            });
+            const { data: authData, error: signInError } =
+                await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password,
+                });
 
             if (signInError) {
                 setEmailError(true);
@@ -128,7 +127,27 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 else localStorage.removeItem("savedEmail");
             }
 
-            if (authData.user) router.push("/dashboard");
+            if (!authData.user) return;
+
+            const { data: profile, error: profileError } = await supabaseClient
+                .from("profiles")
+                .select("account_type")
+                .eq("id", authData.user.id)
+                .single();
+
+            if (profileError) {
+                setEmailError(true);
+                setEmailErrorMessage("Could not load user profile.");
+                return;
+            }
+
+            if (profile?.account_type === "admin") {
+                router.push("/dashboard/users");
+            } else if (profile?.account_type === "auditor") {
+                router.push("/dashboard/auditor");
+            } else {
+                router.push("/dashboard/overview");
+            }
         } catch (err: any) {
             setEmailError(true);
             setEmailErrorMessage(err.message || "An unexpected error occurred");
