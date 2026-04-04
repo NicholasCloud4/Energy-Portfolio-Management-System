@@ -11,7 +11,7 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper
+    Paper,
 } from "@mui/material";
 import { Property } from "./SelectProperties";
 import { supabaseClient } from "@/lib/supabaseClient";
@@ -24,7 +24,20 @@ interface EnergyUsageDisplayRow {
     billingMonth: string;
     electric: number | null;
     gas: number | null;
-    cost: number | null;
+    electricCost: number | null;
+    gasCost: number | null;
+    totalCost: number | null;
+}
+
+interface NestedEnergyType {
+    name: string | null;
+    unit?: string | null;
+}
+
+interface NestedMeter {
+    id?: string;
+    energy_type_id?: string | null;
+    energy_types?: NestedEnergyType | NestedEnergyType[] | null;
 }
 
 interface UsageRow {
@@ -32,10 +45,11 @@ interface UsageRow {
     property_id: string;
     meter_id: string | null;
     usage_kwh: number | null;
+    usage_amount?: number | null;
     usage_date: string | null;
     usage_start: string | null;
     usage_end: string | null;
-    meters?: unknown;
+    meters?: NestedMeter | NestedMeter[] | null;
 }
 
 interface BillingRow {
@@ -44,6 +58,8 @@ interface BillingRow {
     billing_start: string | null;
     billing_end: string | null;
     cost: number | null;
+    usage_amount?: number | null;
+    meters?: NestedMeter | NestedMeter[] | null;
 }
 
 function getMonthKey(dateString: string | null | undefined): string | null {
@@ -51,15 +67,15 @@ function getMonthKey(dateString: string | null | undefined): string | null {
     return dateString.slice(0, 7);
 }
 
-function getEnergyTypeName(row: UsageRow): string | null {
-    const metersValue = row.meters;
-
+function getNestedEnergyTypeName(
+    metersValue: NestedMeter | NestedMeter[] | null | undefined,
+): string | null {
     if (!metersValue) return null;
 
     const meter = Array.isArray(metersValue) ? metersValue[0] : metersValue;
     if (!meter || typeof meter !== "object") return null;
 
-    const energyTypesValue = (meter as any).energy_types;
+    const energyTypesValue = meter.energy_types;
     if (!energyTypesValue) return null;
 
     const energyType = Array.isArray(energyTypesValue)
@@ -68,8 +84,24 @@ function getEnergyTypeName(row: UsageRow): string | null {
 
     if (!energyType || typeof energyType !== "object") return null;
 
-    const name = (energyType as any).name;
+    const name = energyType.name;
     return typeof name === "string" ? name.toLowerCase() : null;
+}
+
+function formatCurrency(value: number | null | undefined): string {
+    if (value === null || value === undefined) {
+        return "N/A";
+    }
+
+    return `$${Number(value).toFixed(2)}`;
+}
+
+function formatUsage(value: number | null | undefined): string | number {
+    if (value === null || value === undefined) {
+        return "N/A";
+    }
+
+    return value;
 }
 
 export default function EnergyUsageTable({ property }: EnergyUsageProps) {
@@ -92,6 +124,7 @@ export default function EnergyUsageTable({ property }: EnergyUsageProps) {
                     property_id,
                     meter_id,
                     usage_kwh,
+                    usage_amount,
                     usage_date,
                     usage_start,
                     usage_end,
@@ -107,9 +140,6 @@ export default function EnergyUsageTable({ property }: EnergyUsageProps) {
                 .eq("property_id", property.id)
                 .order("usage_start", { ascending: false });
 
-            console.log("usageData:", usageData);
-            console.log("usageError:", usageError);
-
             if (usageError) {
                 console.error("Error fetching energy usage:", usageError);
                 setRows([]);
@@ -123,8 +153,8 @@ export default function EnergyUsageTable({ property }: EnergyUsageProps) {
                 ...new Set(
                     typedUsageData
                         .map((row) => row.meter_id)
-                        .filter(Boolean)
-                )
+                        .filter(Boolean),
+                ),
             ] as string[];
 
             let billingData: BillingRow[] = [];
@@ -132,11 +162,23 @@ export default function EnergyUsageTable({ property }: EnergyUsageProps) {
             if (meterIds.length > 0) {
                 const { data, error } = await supabaseClient
                     .from("energy_billing")
-                    .select("id, meter_id, billing_start, billing_end, cost")
+                    .select(`
+                        id,
+                        meter_id,
+                        billing_start,
+                        billing_end,
+                        cost,
+                        usage_amount,
+                        meters (
+                            id,
+                            energy_type_id,
+                            energy_types (
+                                name,
+                                unit
+                            )
+                        )
+                    `)
                     .in("meter_id", meterIds);
-
-                console.log("billingData:", data);
-                console.log("billingError:", error);
 
                 if (error) {
                     console.error("Error fetching billing data:", error);
@@ -159,21 +201,23 @@ export default function EnergyUsageTable({ property }: EnergyUsageProps) {
                     billingMonth: monthKey,
                     electric: null,
                     gas: null,
-                    cost: null
+                    electricCost: null,
+                    gasCost: null,
+                    totalCost: null,
                 };
 
-                const energyTypeName = getEnergyTypeName(row);
-
-                console.log("row meter_id:", row.meter_id);
-                console.log("row usage_kwh:", row.usage_kwh);
-                console.log("energyTypeName:", energyTypeName);
+                const energyTypeName = getNestedEnergyTypeName(row.meters);
+                const usageValue =
+                    row.usage_amount !== null && row.usage_amount !== undefined
+                        ? row.usage_amount
+                        : row.usage_kwh;
 
                 if (energyTypeName === "electricity") {
-                    existing.electric = (existing.electric ?? 0) + (row.usage_kwh ?? 0);
+                    existing.electric = (existing.electric ?? 0) + (usageValue ?? 0);
                 }
 
                 if (energyTypeName === "gas") {
-                    existing.gas = (existing.gas ?? 0) + (row.usage_kwh ?? 0);
+                    existing.gas = (existing.gas ?? 0) + (usageValue ?? 0);
                 }
 
                 merged.set(monthKey, existing);
@@ -190,18 +234,35 @@ export default function EnergyUsageTable({ property }: EnergyUsageProps) {
                     billingMonth: monthKey,
                     electric: null,
                     gas: null,
-                    cost: null
+                    electricCost: null,
+                    gasCost: null,
+                    totalCost: null,
                 };
 
-                existing.cost = row.cost ?? existing.cost;
+                const energyTypeName = getNestedEnergyTypeName(row.meters);
+
+                if (energyTypeName === "electricity") {
+                    existing.electricCost = (existing.electricCost ?? 0) + (row.cost ?? 0);
+                }
+
+                if (energyTypeName === "gas") {
+                    existing.gasCost = (existing.gasCost ?? 0) + (row.cost ?? 0);
+                }
+
                 merged.set(monthKey, existing);
             });
 
-            const finalRows = Array.from(merged.values()).sort((a, b) =>
-                b.billingMonth.localeCompare(a.billingMonth)
-            );
+            const finalRows = Array.from(merged.values())
+                .map((row) => {
+                    const totalCost =
+                        (row.electricCost ?? 0) + (row.gasCost ?? 0);
 
-            console.log("finalRows:", finalRows);
+                    return {
+                        ...row,
+                        totalCost: totalCost > 0 ? totalCost : null,
+                    };
+                })
+                .sort((a, b) => b.billingMonth.localeCompare(a.billingMonth));
 
             setRows(finalRows);
             setLoading(false);
@@ -245,20 +306,20 @@ export default function EnergyUsageTable({ property }: EnergyUsageProps) {
                                     <TableCell>Billing Month</TableCell>
                                     <TableCell>Electric (kWh)</TableCell>
                                     <TableCell>Gas (therms)</TableCell>
-                                    <TableCell>Cost</TableCell>
+                                    <TableCell>Electric Cost</TableCell>
+                                    <TableCell>Gas Cost</TableCell>
+                                    <TableCell>Total Cost</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {rows.map((row) => (
                                     <TableRow key={row.billingMonth}>
                                         <TableCell>{row.billingMonth}</TableCell>
-                                        <TableCell>{row.electric ?? "N/A"}</TableCell>
-                                        <TableCell>{row.gas ?? "N/A"}</TableCell>
-                                        <TableCell>
-                                            {row.cost !== null && row.cost !== undefined
-                                                ? `$${Number(row.cost).toFixed(2)}`
-                                                : "N/A"}
-                                        </TableCell>
+                                        <TableCell>{formatUsage(row.electric)}</TableCell>
+                                        <TableCell>{formatUsage(row.gas)}</TableCell>
+                                        <TableCell>{formatCurrency(row.electricCost)}</TableCell>
+                                        <TableCell>{formatCurrency(row.gasCost)}</TableCell>
+                                        <TableCell>{formatCurrency(row.totalCost)}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

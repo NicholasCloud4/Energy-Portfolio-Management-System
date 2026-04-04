@@ -78,7 +78,6 @@ export default function MenuContent() {
             { text: "Overview", icon: <HomeIcon />, path: "/dashboard/auditorOverview" },
             { text: "Organizations", icon: <PersonIcon />, path: "/dashboard/auditorOrganizations" },
             { text: "Properties", icon: <AnalyticsIcon />, path: "/dashboard/properties" },
-            { text: "Users", icon: <PeopleIcon />, path: "/dashboard/users" },
         ],
     };
 

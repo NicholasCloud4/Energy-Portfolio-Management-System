@@ -52,7 +52,7 @@ export default function SelectOrganizations({
             const { data, error } = await supabaseClient
                 .from("organizations")
                 .select("id, name, jurisdiction_id")
-              //  .eq("jurisdiction_id", jurisdictionId)
+                //  .eq("jurisdiction_id", jurisdictionId)
                 .order("name", { ascending: true });
 
             if (error) {
