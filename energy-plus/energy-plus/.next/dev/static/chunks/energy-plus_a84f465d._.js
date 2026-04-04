@@ -315,7 +315,7 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 
 __turbopack_context__.s([
     "default",
-    ()=>SignIn
+    ()=>Layout
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/energy-plus/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/energy-plus/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
@@ -401,7 +401,7 @@ const SignInContainer = (0, __TURBOPACK__imported__module__$5b$project$5d2f$ener
         }
     }));
 _c1 = SignInContainer;
-function SignIn(props) {
+function Layout(props) {
     _s();
     const [emailError, setEmailError] = __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"](false);
     const [emailErrorMessage, setEmailErrorMessage] = __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"]('');
@@ -416,7 +416,7 @@ function SignIn(props) {
     const handleClose = ()=>setOpen(false);
     // Load saved email from localStorage on client
     __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"]({
-        "SignIn.useEffect": ()=>{
+        "Layout.useEffect": ()=>{
             if ("TURBOPACK compile-time truthy", 1) {
                 const savedEmail = localStorage.getItem("savedEmail");
                 if (savedEmail && emailRef.current) {
@@ -424,7 +424,7 @@ function SignIn(props) {
                 }
             }
         }
-    }["SignIn.useEffect"], []);
+    }["Layout.useEffect"], []);
     const validateInputs = ()=>{
         const email = emailRef.current;
         const password = passwordRef.current;
@@ -442,8 +442,8 @@ function SignIn(props) {
     const handleSubmit = async (event)=>{
         event.preventDefault();
         if (!validateInputs()) return;
-        const email = emailRef.current?.value ?? '';
-        const password = passwordRef.current?.value ?? '';
+        const email = emailRef.current?.value ?? "";
+        const password = passwordRef.current?.value ?? "";
         try {
             const { data: authData, error: signInError } = await __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabaseClient"].auth.signInWithPassword({
                 email,
@@ -458,7 +458,20 @@ function SignIn(props) {
                 if (rememberMe) localStorage.setItem("savedEmail", email);
                 else localStorage.removeItem("savedEmail");
             }
-            if (authData.user) router.push("/dashboard");
+            if (!authData.user) return;
+            const { data: profile, error: profileError } = await __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabaseClient"].from("profiles").select("account_type").eq("id", authData.user.id).single();
+            if (profileError) {
+                setEmailError(true);
+                setEmailErrorMessage("Could not load user profile.");
+                return;
+            }
+            if (profile?.account_type === "admin") {
+                router.push("/dashboard/users");
+            } else if (profile?.account_type === "auditor") {
+                router.push("/dashboard/auditor");
+            } else {
+                router.push("/dashboard/overview");
+            }
         } catch (err) {
             setEmailError(true);
             setEmailErrorMessage(err.message || "An unexpected error occurred");
@@ -471,7 +484,7 @@ function SignIn(props) {
                 enableColorScheme: true
             }, void 0, false, {
                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                lineNumber: 140,
+                lineNumber: 159,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SignInContainer, {
@@ -486,7 +499,7 @@ function SignIn(props) {
                         }
                     }, void 0, false, {
                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                        lineNumber: 142,
+                        lineNumber: 161,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(Card, {
@@ -499,12 +512,12 @@ function SignIn(props) {
                                 },
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$app$2f$global$2d$components$2f$SitemarkIcon$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                                     fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                    lineNumber: 145,
+                                    lineNumber: 164,
                                     columnNumber: 25
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                lineNumber: 144,
+                                lineNumber: 163,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$Typography$2f$Typography$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -517,7 +530,7 @@ function SignIn(props) {
                                 children: "Sign in"
                             }, void 0, false, {
                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                lineNumber: 148,
+                                lineNumber: 167,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$Box$2f$Box$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -538,7 +551,7 @@ function SignIn(props) {
                                                 children: "Email"
                                             }, void 0, false, {
                                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                                lineNumber: 159,
+                                                lineNumber: 178,
                                                 columnNumber: 29
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$TextField$2f$TextField$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -557,13 +570,13 @@ function SignIn(props) {
                                                 color: emailError ? 'error' : 'primary'
                                             }, void 0, false, {
                                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                                lineNumber: 160,
+                                                lineNumber: 179,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                        lineNumber: 158,
+                                        lineNumber: 177,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$FormControl$2f$FormControl$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -573,7 +586,7 @@ function SignIn(props) {
                                                 children: "Password"
                                             }, void 0, false, {
                                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                                lineNumber: 178,
+                                                lineNumber: 197,
                                                 columnNumber: 29
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$TextField$2f$TextField$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -591,13 +604,13 @@ function SignIn(props) {
                                                 color: passwordError ? 'error' : 'primary'
                                             }, void 0, false, {
                                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                                lineNumber: 179,
+                                                lineNumber: 198,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                        lineNumber: 177,
+                                        lineNumber: 196,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$FormControlLabel$2f$FormControlLabel$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -607,13 +620,13 @@ function SignIn(props) {
                                             color: "primary"
                                         }, void 0, false, {
                                             fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                            lineNumber: 197,
+                                            lineNumber: 216,
                                             columnNumber: 33
                                         }, void 0),
                                         label: "Remember me"
                                     }, void 0, false, {
                                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                        lineNumber: 195,
+                                        lineNumber: 214,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$app$2f$sign$2d$in$2f$components$2f$ForgotPassword$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -621,7 +634,7 @@ function SignIn(props) {
                                         handleClose: handleClose
                                     }, void 0, false, {
                                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                        lineNumber: 205,
+                                        lineNumber: 224,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$Button$2f$Button$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -631,7 +644,7 @@ function SignIn(props) {
                                         children: "Sign in"
                                     }, void 0, false, {
                                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                        lineNumber: 207,
+                                        lineNumber: 226,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$Link$2f$Link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -645,20 +658,20 @@ function SignIn(props) {
                                         children: "Forgot your password?"
                                     }, void 0, false, {
                                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                        lineNumber: 211,
+                                        lineNumber: 230,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                lineNumber: 152,
+                                lineNumber: 171,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$Divider$2f$Divider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
                                 children: "or"
                             }, void 0, false, {
                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                lineNumber: 222,
+                                lineNumber: 241,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f40$mui$2f$material$2f$esm$2f$Typography$2f$Typography$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -674,44 +687,44 @@ function SignIn(props) {
                                         children: "Sign up"
                                     }, void 0, false, {
                                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                        lineNumber: 226,
+                                        lineNumber: 245,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                                lineNumber: 224,
+                                lineNumber: 243,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                        lineNumber: 143,
+                        lineNumber: 162,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-                lineNumber: 141,
+                lineNumber: 160,
                 columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/energy-plus/app/sign-in/layout.tsx",
-        lineNumber: 139,
+        lineNumber: 158,
         columnNumber: 9
     }, this);
 }
-_s(SignIn, "L176syxXV+2FlBj69cBgrw8QAVk=", false, function() {
+_s(Layout, "L176syxXV+2FlBj69cBgrw8QAVk=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$energy$2d$plus$2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];
 });
-_c2 = SignIn;
+_c2 = Layout;
 var _c, _c1, _c2;
 __turbopack_context__.k.register(_c, "Card");
 __turbopack_context__.k.register(_c1, "SignInContainer");
-__turbopack_context__.k.register(_c2, "SignIn");
+__turbopack_context__.k.register(_c2, "Layout");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }

@@ -7,7 +7,7 @@ export default function AuditorPage() {
     const router = useRouter();
 
     useEffect(() => {
-        router.replace("/dashboard/AuditorOverview");
+        router.replace("/dashboard/auditorOverview");
     }, [router]);
 
     return null;
