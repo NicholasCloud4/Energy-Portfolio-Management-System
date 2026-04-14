@@ -110,25 +110,57 @@ export default function Layout() {
 
     /* ---------------- ADD CONTACT ---------------- */
     const handleAddContact = async (email: string) => {
-        if (!user) return;
+        if (!user) {
+            throw new Error("You must be signed in");
+        }
 
         try {
-            const res = await fetch("/api/contacts/addContact", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, ownerId: user.id }),
-            });
+            const normalizedEmail = email.trim().toLowerCase();
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.error || "Failed to add contact");
+            if (!normalizedEmail) {
+                throw new Error("Email is required");
             }
 
-            // Refresh contacts
+            const profile = availableUsers.find(
+                (u) => u.email?.toLowerCase() === normalizedEmail
+            );
+
+            if (!profile) {
+                throw new Error("User not found");
+            }
+
+            if (profile.id === user.id) {
+                throw new Error("You cannot add yourself");
+            }
+
+            const existingContact = contacts.find(
+                (c) => c.email?.toLowerCase() === normalizedEmail
+            );
+
+            if (existingContact) {
+                throw new Error("Contact already exists");
+            }
+
+            const fullName = `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim();
+
+            const { error } = await supabaseClient.from("contacts").insert({
+                owner_id: user.id,
+                email: profile.email,
+                first_name: profile.first_name,
+                last_name: profile.last_name,
+                full_name: fullName,
+            });
+
+            if (error) {
+                throw new Error(error.message);
+            }
+
             await fetchContacts();
-        } catch (err: any) {
-            throw new Error(err.message || "Failed to add contact");
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                throw err;
+            }
+            throw new Error("Failed to add contact");
         }
     };
 
@@ -167,14 +199,14 @@ export default function Layout() {
         [availableUsers],
     );
 
-    /* ---------------- TRANSFER OWNERSHIP (kept for later) ---------------- */
+    /* ---------------- TRANSFER OWNERSHIP ---------------- */
     const handleTransferOwnership = async () => {
         if (!user || !transferTo || !transferItem) return;
 
         const targetProfileId = getProfileIdByEmail(transferTo);
 
         if (!targetProfileId) {
-            console.error("Could not find profile for email");
+            console.error("Could not find profile");
             return;
         }
 
@@ -235,7 +267,6 @@ export default function Layout() {
                 onAddAction={handleAddContact}
             />
 
-            {/* kept for later */}
             <TransferOwnershipDialog
                 open={showTransferModal}
                 onClose={() => setShowTransferModal(false)}
@@ -252,8 +283,7 @@ export default function Layout() {
                 <DialogTitle>Remove Contact?</DialogTitle>
                 <DialogContent>
                     <Typography>
-                        Are you sure you want to remove this contact? This
-                        action cannot be undone.
+                        Are you sure you want to remove this contact? This action cannot be undone.
                     </Typography>
                 </DialogContent>
                 <DialogActions>
