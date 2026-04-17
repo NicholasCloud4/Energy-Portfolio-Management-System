@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import RadialDial from "./components/RadialDial";
 import { supabaseClient } from "@/lib/supabaseClient";
 import GeneralStatus from "./components/GeneralStatus";
-import { Box, Grid } from "@mui/material";
+import { Box, Container, Grid, Typography } from "@mui/material";
 import OverviewSlider from "./components/OverviewSlider";
 
 type PropertyScore = {
@@ -116,31 +116,69 @@ export default function OverviewContent() {
     return (
         <>
             <div>Overview Test</div>
-            <Grid container spacing={3}>
-                {/* Radial Dial */}
-                <Grid size={{ xs: 12, md: 5, lg: 4 }}>
-                    <Box
-                        sx={{ p: 2, display: "flex", justifyContent: "center" }}
-                    >
-                        {score !== null && <RadialDial value={score} />}
-                    </Box>
+            <Container maxWidth="xl" sx={{ py: 4 }}>
+                <Grid
+                    container
+                    spacing={4}
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    {/* Portfolio Score Section */}
+                    <Grid size={{ xs: 12, md: 5, lg: 4 }}>
+                        <Box
+                            sx={{
+                                p: 3,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                backgroundColor: "background.paper",
+                                borderRadius: 4,
+                                height: "100%",
+                                minHeight: 200,
+                            }}
+                        >
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    mb: 2,
+                                    px: 1,
+                                    textAlign: "center",
+                                    fontWeight: 600,
+                                }}
+                            >
+                                Portfolio Score
+                            </Typography>
+
+                            {score !== null && (
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <RadialDial value={score} />
+                                </Box>
+                            )}
+                        </Box>
+                    </Grid>
+
+                    {/* General Status Section */}
+                    <Grid size={{ xs: 12, md: 7, lg: 8 }}>
+                        <Box sx={{ maxHeight: 350, overflowY: "auto", pr: 1 }}>
+                            <GeneralStatus properties={properties} />
+                        </Box>
+                    </Grid>
                 </Grid>
 
-                {/* General Status */}
-                <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-                    <Box
-                        sx={{
-                            maxHeight: 350,
-                            overflowY: "auto",
-                            pr: 1,
-                        }}
-                    >
-                        <GeneralStatus properties={properties} />
-                    </Box>
-                </Grid>
-            </Grid>
-            {/* Slider */}
-            <OverviewSlider organizations={organizations} />
+                {/* Slider Section */}
+                <Box sx={{ mt: 6 }}>
+                    <Typography variant="h6" sx={{ mb: 2, px: 1 }}>
+                        Organizations
+                    </Typography>
+                    <OverviewSlider organizations={organizations} />
+                </Box>
+            </Container>
         </>
     );
 }

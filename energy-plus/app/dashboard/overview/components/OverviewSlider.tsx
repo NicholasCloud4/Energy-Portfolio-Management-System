@@ -34,30 +34,47 @@ export default function OverviewSlider({ organizations }: Props) {
                     key={org.id}
                     elevation={2}
                     sx={{
-                        minWidth: 240,
-                        height: 200,
+                        minWidth: 320,
+                        height: 300,
                         flexShrink: 0,
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: "Paper",
-                        borderRadius: 3,
-                        border: "2px solid transparent",
-                        transition: "all 0.3s ease",
+                        flexDirection: "column",
+                        backgroundColor: "background.paper",
+                        borderRadius: 4,
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        "&:hover": {
+                            transform: "translateY(-4px)",
+                            boxShadow: 6,
+                        },
                     }}
                 >
-                    <CardContent>
+                    <CardContent
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            height: "100%",
+                            gap: 2,
+                            p: 3,
+                            "&:last-child": { pb: 3 },
+                        }}
+                    >
                         <Typography
-                            variant="h6"
+                            variant="h5"
                             sx={{
-                                fontWeight: 500,
-                                letterSpacing: "0.5px",
+                                fontWeight: 600,
                                 textAlign: "center",
+                                lineHeight: 1.2,
                             }}
                         >
                             {org.name}
                         </Typography>
-                        <RadialDial value={org.score} />
+
+                        <Box sx={{ transform: "scale(1.2)" }}>
+                            <RadialDial value={org.score} />
+                        </Box>
                     </CardContent>
                 </Card>
             ))}
