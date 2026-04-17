@@ -22,11 +22,22 @@ export default function OverviewSlider({ organizations }: Props) {
                 gap: 3,
                 py: 3,
                 px: 1,
-                "&::-webkit-scrollbar": { height: "6px" },
-                "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    borderRadius: "10px",
+                "&::-webkit-scrollbar": {
+                    height: "6px",
                 },
+                "&::-webkit-scrollbar-track": {
+                    backgroundColor: "transparent",
+                },
+                "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "action.disabled",
+                    borderRadius: "10px",
+                    "&:hover": {
+                        backgroundColor: "action.active",
+                    },
+                },
+
+                scrollbarWidth: "thin",
+                scrollbarColor: "rgba(128, 128, 128, 0.5) transparent",
             }}
         >
             {organizations.map((org) => (
