@@ -42,8 +42,8 @@ type EnergyType = {
 
 type EnergyUsageEntry = {
     energy_type_id: string;
-    usage_amount: number;
-    cost: number;
+    usage_amount: number | "";
+    cost: number | "";
 };
 
 export default function LogEnergy({ property, onSuccess }: LogEnergyProps) {
@@ -56,7 +56,7 @@ export default function LogEnergy({ property, onSuccess }: LogEnergyProps) {
     const [energyTypes, setEnergyTypes] = React.useState<EnergyType[]>([]);
 
     const [entries, setEntries] = React.useState<EnergyUsageEntry[]>([
-        { energy_type_id: "", usage_amount: 0, cost: 0 },
+        { energy_type_id: "", usage_amount: "", cost: "" },
     ]);
 
     const [usageDate, setUsageDate] = React.useState<Dayjs | null>(dayjs());
@@ -100,7 +100,7 @@ export default function LogEnergy({ property, onSuccess }: LogEnergyProps) {
 
     const addEntry = () => {
         if (entries.length < 2) {
-            setEntries([...entries, { energy_type_id: "", usage_amount: 0, cost: 0 }]);
+            setEntries([...entries, { energy_type_id: "", usage_amount: "", cost: "" }]);
         }
     };
 
@@ -125,9 +125,20 @@ export default function LogEnergy({ property, onSuccess }: LogEnergyProps) {
         }
 
         for (const e of entries) {
-            if (!e.energy_type_id) return setError("Select energy type"), false;
-            if (e.usage_amount <= 0) return setError("Usage must be > 0"), false;
-            if (e.cost <= 0) return setError("Cost must be > 0"), false;
+            if (!e.energy_type_id) {
+                setError("Select energy type");
+                return false;
+            }
+
+            if (typeof e.usage_amount !== "number" || e.usage_amount <= 0) {
+                setError("Usage must be greater than 0");
+                return false;
+            }
+
+            if (typeof e.cost !== "number" || e.cost <= 0) {
+                setError("Cost must be greater than 0");
+                return false;
+            }
         }
 
         return true;
@@ -210,7 +221,7 @@ export default function LogEnergy({ property, onSuccess }: LogEnergyProps) {
                 onSuccess();
             }
 
-            setEntries([{ energy_type_id: "", usage_amount: 0, cost: 0 }]);
+            setEntries([{ energy_type_id: "", usage_amount: "", cost: "" }]);
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -273,7 +284,22 @@ export default function LogEnergy({ property, onSuccess }: LogEnergyProps) {
                                         onChange={(e) =>
                                             handleEntryChange(i, "usage_amount", parseFloat(e.target.value) || 0)
                                         }
+                                        fullWidth
+                                        sx={{
+                                            "& input[type=number]": {
+                                                MozAppearance: "textfield",
+                                            },
+                                            "& input[type=number]::-webkit-outer-spin-button": {
+                                                WebkitAppearance: "none",
+                                                margin: 0,
+                                            },
+                                            "& input[type=number]::-webkit-inner-spin-button": {
+                                                WebkitAppearance: "none",
+                                                margin: 0,
+                                            },
+                                        }}
                                     />
+
                                     <TextField
                                         label="Cost"
                                         type="number"
@@ -281,6 +307,20 @@ export default function LogEnergy({ property, onSuccess }: LogEnergyProps) {
                                         onChange={(e) =>
                                             handleEntryChange(i, "cost", parseFloat(e.target.value) || 0)
                                         }
+                                        fullWidth
+                                        sx={{
+                                            "& input[type=number]": {
+                                                MozAppearance: "textfield",
+                                            },
+                                            "& input[type=number]::-webkit-outer-spin-button": {
+                                                WebkitAppearance: "none",
+                                                margin: 0,
+                                            },
+                                            "& input[type=number]::-webkit-inner-spin-button": {
+                                                WebkitAppearance: "none",
+                                                margin: 0,
+                                            },
+                                        }}
                                     />
                                 </Box>
 

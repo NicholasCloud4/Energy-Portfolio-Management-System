@@ -1,12 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Card, Grid, CardContent, Typography, Button } from "@mui/material";
+import {
+    Box,
+    Card,
+    Grid,
+    CardContent,
+    Typography,
+    Button,
+    IconButton,
+    Tooltip,
+} from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import RadialDial from "./components/RadialDial";
 import SelectProperty, { Property } from "./components/SelectProperty";
 import EnergyUsage from "./components/EnergyUsage";
-import LogEnergy from "./components/LogEnergy"
+import LogEnergy from "./components/LogEnergy";
+import Graph from "./components/Graph";
+import Summary from "./components/Summary";
 import { supabaseClient } from "@/lib/supabaseClient";
+import * as React from "react";
 
 export default function OverviewContent() {
     const [energyRefreshKey, setEnergyRefreshKey] = useState(0);
@@ -43,11 +56,15 @@ export default function OverviewContent() {
         }
 
         fetchScore();
-    }, [selectedProperty]);
+    }, [selectedProperty, energyRefreshKey]);
 
-    const handlePropertySelect = (property: Property) => {
+    const handlePropertySelect = (property: Property | null) => {
         setSelectedProperty(property);
         setShowLogEnergy(false);
+    };
+
+    const handleRefresh = () => {
+        setEnergyRefreshKey((prev) => prev + 1);
     };
 
     return (
@@ -70,13 +87,30 @@ export default function OverviewContent() {
                             {score !== null && <RadialDial value={score} />}
 
                             {selectedProperty && (
-                                <Box sx={{ mt: 3 }}>
+                                <Box
+                                    sx={{
+                                        mt: 3,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1,
+                                    }}
+                                >
                                     <Button
                                         variant="contained"
                                         onClick={() => setShowLogEnergy((prev) => !prev)}
                                     >
                                         {showLogEnergy ? "Hide Log Energy" : "Log Energy"}
                                     </Button>
+
+                                    <Tooltip title="Refresh metrics">
+                                        <IconButton
+                                            onClick={handleRefresh}
+                                            color="primary"
+                                            aria-label="refresh metrics"
+                                        >
+                                            <RefreshIcon />
+                                        </IconButton>
+                                    </Tooltip>
                                 </Box>
                             )}
                         </CardContent>
@@ -84,40 +118,7 @@ export default function OverviewContent() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 8 }}>
-                    <Card sx={{ height: "100%" }}>
-                        <CardContent>
-                            <Typography variant="h6" sx={{ mb: 2 }}>
-                                Property Summary
-                            </Typography>
-
-                            {selectedProperty ? (
-                                <>
-                                    <Typography>
-                                        <strong>ID:</strong> {selectedProperty.id}
-                                    </Typography>
-
-                                    <Typography>
-                                        <strong>Street:</strong>{" "}
-                                        {selectedProperty.street || "N/A"}
-                                    </Typography>
-
-                                    <Typography>
-                                        <strong>Type:</strong>{" "}
-                                        {selectedProperty.property_type || "N/A"}
-                                    </Typography>
-
-                                    <Typography>
-                                        <strong>Energy Score:</strong>{" "}
-                                        {score && score > 0 ? score : "N/A"}
-                                    </Typography>
-                                </>
-                            ) : (
-                                <Typography color="text.secondary">
-                                    Select a property to display information.
-                                </Typography>
-                            )}
-                        </CardContent>
-                    </Card>
+                    <Summary property={selectedProperty} score={score} />
                 </Grid>
 
                 {selectedProperty && showLogEnergy && (
@@ -136,6 +137,13 @@ export default function OverviewContent() {
                         </Card>
                     </Grid>
                 )}
+
+                <Grid size={{ xs: 12, md: 8 }}>
+                    <Graph
+                        property={selectedProperty}
+                        refreshKey={energyRefreshKey}
+                    />
+                </Grid>
 
                 <Grid size={12}>
                     <EnergyUsage
