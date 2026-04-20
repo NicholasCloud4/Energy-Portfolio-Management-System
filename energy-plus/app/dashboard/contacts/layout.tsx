@@ -21,11 +21,15 @@ import TransferOwnershipDialog from "./components/TransferOwnershipDialog";
 
 import type { Contact, Profile, Organization } from "./components/types";
 
+type ProfileWithRole = Profile & {
+    role?: string | null;
+};
+
 export default function Layout() {
     const [user, setUser] = useState<User | null>(null);
 
     const [contacts, setContacts] = useState<Contact[]>([]);
-    const [availableUsers, setAvailableUsers] = useState<Profile[]>([]);
+    const [availableUsers, setAvailableUsers] = useState<ProfileWithRole[]>([]);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
 
     const [showAddModal, setShowAddModal] = useState(false);
@@ -36,6 +40,16 @@ export default function Layout() {
 
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [contactToDelete, setContactToDelete] = useState<string | null>(null);
+
+    const normalizeEmail = (email: string | null | undefined) =>
+        email?.trim().toLowerCase() ?? "";
+
+    const isRestrictedAccount = (profile: ProfileWithRole | null | undefined) => {
+        if (!profile) return false;
+
+        const role = profile.role?.trim().toLowerCase();
+        return role === "admin" || role === "auditor";
+    };
 
     /* ---------------- FETCH CONTACTS ---------------- */
     const fetchContacts = useCallback(async () => {
@@ -58,7 +72,7 @@ export default function Layout() {
     const fetchUsers = useCallback(async () => {
         const { data, error } = await supabaseClient
             .from("profiles")
-            .select("id, first_name, last_name, email")
+            .select("id, first_name, last_name, email, role")
             .not("email", "is", null);
 
         if (error) {
@@ -66,7 +80,11 @@ export default function Layout() {
             return;
         }
 
-        setAvailableUsers(data ?? []);
+        const filteredUsers = ((data ?? []) as ProfileWithRole[]).filter(
+            (profile) => !isRestrictedAccount(profile),
+        );
+
+        setAvailableUsers(filteredUsers);
     }, []);
 
     /* ---------------- FETCH ORGS ---------------- */
@@ -115,14 +133,14 @@ export default function Layout() {
         }
 
         try {
-            const normalizedEmail = email.trim().toLowerCase();
+            const normalizedEmail = normalizeEmail(email);
 
             if (!normalizedEmail) {
                 throw new Error("Email is required");
             }
 
             const profile = availableUsers.find(
-                (u) => u.email?.toLowerCase() === normalizedEmail
+                (u) => normalizeEmail(u.email) === normalizedEmail,
             );
 
             if (!profile) {
@@ -133,15 +151,20 @@ export default function Layout() {
                 throw new Error("You cannot add yourself");
             }
 
+            if (isRestrictedAccount(profile)) {
+                throw new Error("Admin and auditor accounts cannot be added as contacts");
+            }
+
             const existingContact = contacts.find(
-                (c) => c.email?.toLowerCase() === normalizedEmail
+                (c) => normalizeEmail(c.email) === normalizedEmail,
             );
 
             if (existingContact) {
                 throw new Error("Contact already exists");
             }
 
-            const fullName = `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim();
+            const fullName =
+                `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim();
 
             const { error } = await supabaseClient.from("contacts").insert({
                 owner_id: user.id,
@@ -165,7 +188,6 @@ export default function Layout() {
     };
 
     /* ---------------- REMOVE CONTACT ---------------- */
-
     const handleRequestRemoveContact = (contactId: string) => {
         setContactToDelete(contactId);
         setConfirmOpen(true);
@@ -191,17 +213,42 @@ export default function Layout() {
     };
 
     /* EMAIL → PROFILE LOOKUP */
-    const getProfileIdByEmail = useCallback(
+    const getProfileByEmail = useCallback(
         (email: string) => {
-            const profile = availableUsers.find((u) => u.email === email);
-            return profile?.id ?? null;
+            const normalizedEmail = normalizeEmail(email);
+
+            return (
+                availableUsers.find(
+                    (u) => normalizeEmail(u.email) === normalizedEmail,
+                ) ?? null
+            );
         },
         [availableUsers],
+    );
+
+    const getProfileIdByEmail = useCallback(
+        (email: string) => {
+            const profile = getProfileByEmail(email);
+            return profile?.id ?? null;
+        },
+        [getProfileByEmail],
     );
 
     /* ---------------- TRANSFER OWNERSHIP ---------------- */
     const handleTransferOwnership = async () => {
         if (!user || !transferTo || !transferItem) return;
+
+        const targetProfile = getProfileByEmail(transferTo);
+
+        if (!targetProfile) {
+            console.error("Could not find profile");
+            return;
+        }
+
+        if (isRestrictedAccount(targetProfile)) {
+            console.error("Cannot transfer ownership to admin or auditor accounts");
+            return;
+        }
 
         const targetProfileId = getProfileIdByEmail(transferTo);
 

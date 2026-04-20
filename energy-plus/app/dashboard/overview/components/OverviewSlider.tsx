@@ -91,4 +91,8 @@ export default function OverviewSlider({ organizations }: Props) {
             ))}
         </Box>
     );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1f8c8e9a83295a295b479f850a3cd293a5bda86a

@@ -47,7 +47,6 @@ export default function SelectProperties({
                 setProperties([]);
                 return;
             }
-
             setLoading(true);
             setErrorText("");
 

@@ -1,118 +1,60 @@
-import React, {useEffect, useState} from 'react';
-import {useForm} from 'react-hook-form';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import { Typography } from '@mui/material';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import {supabaseClient} from '@/lib/supabaseClient';
+'use client';
 
-
-
-
-
-
-type ChangePasswordFormData = {
-    password: string;
-    confirmPassword: string;
-};
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Box, TextField, Typography, Alert, Button } from '@mui/material';
+import { supabaseClient } from '@/lib/supabaseClient';
 
 export default function ChangePassword() {
     const supabase = supabaseClient;
+    const [showFields, setShowFields] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors},
-        watch,
-        setValue
-    } = useForm<ChangePasswordFormData>({
-        defaultValues: {
-            password: '',
-            confirmPassword: ''
-        },
+    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+        defaultValues: { password: '', confirmPassword: '' },
     });
 
-    //watches password field to compare it with confirm password field.
-    const newPassword = watch ('password');
+    const newPassword = watch('password');
 
-    const handleFormSubmit = async (data: ChangePasswordFormData) => {
+    const handleFormSubmit = async (data: any) => {
         setMessage(null);
-
-        if (!data.password.trim()) {
-            setMessage({ type: 'error', text: 'Password is required' });
-            return;
-        }
-
-        if (data.password !== data.confirmPassword) {
-            setMessage({ type: 'error', text: 'Passwords do not match' });
-            return;
-        }
-
         setIsSaving(true);
-
         try {
-            const { error} = await supabase.auth.updateUser({
-                password: data.password,
-            });
-
+            const { error } = await supabase.auth.updateUser({ password: data.password });
             if (error) throw error;
             setMessage({ type: 'success', text: 'Password updated successfully' });
             setValue('password', '');
             setValue('confirmPassword', '');
         } catch (error) {
-            console.log(error);
             setMessage({ type: 'error', text: 'Error updating password' });
-
         } finally {
             setIsSaving(false);
         }
     };
+
     return (
-        <Box sx={{ width: '100%' }}>
-            {message && (
-                <Alert severity={message.type} sx={{ mb: 2 }}>
-                    {message.text}
-                </Alert>
+        <Box sx={{ mt: 2 }}>
+            <Button variant="contained" onClick={() => setShowFields(!showFields)} sx={{ px: 4, py: 1.5, mb: 2 }}>
+                {showFields ? 'Hide' : 'Change Password'}
+            </Button>
+
+            {showFields && (
+                <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                    <Typography variant="h6">Update Password</Typography>
+                    {message && <Alert severity={message.type}>{message.text}</Alert>}
+
+                    <TextField {...register('password', { required: true, minLength: 8 })}
+                               label="New password"
+                               type="password"
+                               error={!!errors.password} fullWidth />
+                    <TextField {...register('confirmPassword', { validate: v => v === newPassword || 'Passwords do not match' })} label="Confirm new password" type="password" error={!!errors.confirmPassword} fullWidth />
+
+                    <Button type="submit" variant="contained" disabled={isSaving} sx={{ width: 'fit-content', px: 4 }}>
+                        {isSaving ? 'Saving...' : 'Save Password'}
+                    </Button>
+                </Box>
             )}
-            <Typography variant = "h6" gutterBottom>
-                Change Password
-            </Typography>
-            <Box
-                component = "form"
-                onSubmit = {handleSubmit(handleFormSubmit)}
-                sx={{ display: 'flex', flexDirection: 'column', gap : 2.5}}
-            >
-                <TextField
-                    {...register('password', { required: 'password must be 8 characters or more', minLength: 8})}
-                    label = "New password"
-                    type = "password"
-                    error = {!!errors.password}
-                    helperText = {errors.password ? errors.password?.message || 'Password must be at least 8 characters' : ''}
-                    fullWidth
-                />
-
-                <TextField
-                    {...register('confirmPassword', {
-                        validate: (value) => value === newPassword || !newPassword || 'Passwords do not match'
-                    })}
-                    label = "Confirm new password"
-                    type = "password"
-                    error = {!!errors.confirmPassword}
-                    helperText = {errors.confirmPassword?.message}
-                    fullWidth
-                />
-
-                <Button type = "submit"
-                        variant = "contained"
-                        disabled = {isSaving}
-                        sx={{ alignSelf: 'flex-start', mt: 0.5, mb: 2, px: 4, py: 1.5 }}
-                >
-                    {isSaving ? 'Saving...' : 'Submit'}
-                </Button>
-            </Box>
         </Box>
     );
 }
