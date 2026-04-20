@@ -173,8 +173,11 @@ export default function OverviewContent() {
 
                 {/* Slider Section */}
                 <Box sx={{ mt: 6 }}>
-                    <Typography variant="h6" sx={{ mb: 2, px: 1 }}>
-                        Organizations
+                    <Typography
+                        variant="h6"
+                        sx={{ mb: 2, px: 1, textAlign: "center" }}
+                    >
+                        General Usage Data
                     </Typography>
                     <OverviewSlider organizations={organizations} />
                 </Box>
