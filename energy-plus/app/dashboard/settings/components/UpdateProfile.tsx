@@ -7,11 +7,12 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
 import { supabaseClient } from '@/lib/supabaseClient';
 
 export default function UpdateProfile() {
     const supabase = supabaseClient;
-    const [message, setMessage] = useState<any>(null);
+    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [showEditFields, setShowEditFields] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -25,12 +26,12 @@ export default function UpdateProfile() {
         async function loadData() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-                if (data) {
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                if (profile) {
                     const initial = {
-                        firstName: data.first_name || '',
-                        lastName: data.last_name || '',
-                        username: data.username || '',
+                        firstName: profile.first_name || '',
+                        lastName: profile.last_name || '',
+                        username: profile.username || '',
                         email: user.email || ''
                     };
                     setProfileData(initial);
@@ -39,7 +40,13 @@ export default function UpdateProfile() {
             }
         }
         loadData();
-    }, [reset]);
+    }, [reset, supabase]);
+
+    const handleCancel = () => {
+        reset(profileData);
+        setShowEditFields(false);
+        setMessage(null);
+    };
 
     const onSubmit = async (data: any) => {
         setLoading(true);
@@ -47,9 +54,10 @@ export default function UpdateProfile() {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             const updates: any = {};
+
             if (data.firstName !== profileData.firstName) updates.first_name = data.firstName;
             if (data.lastName !== profileData.lastName) updates.last_name = data.lastName;
-            if (data.username.toLowerCase() !== profileData.username.toLowerCase()) {
+            if (data.username?.toLowerCase() !== profileData.username?.toLowerCase()) {
                 updates.username = data.username.toLowerCase();
             }
 
@@ -58,7 +66,7 @@ export default function UpdateProfile() {
                 if (error) throw error;
             }
 
-            if (data.email.toLowerCase() !== user?.email?.toLowerCase()) {
+            if (data.email?.toLowerCase() !== user?.email?.toLowerCase()) {
                 const { error: emailError } = await supabase.auth.updateUser({ email: data.email.toLowerCase() });
                 if (emailError) throw emailError;
                 setMessage({ type: 'success', text: 'Success! Check your email to confirm.' });
@@ -77,36 +85,72 @@ export default function UpdateProfile() {
 
     return (
         <Box>
-            <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2 }}>Your Information</Typography>
+            <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2 }}>
+                Your Information
+            </Typography>
 
             {message && <Alert severity={message.type} sx={{ mb: 2 }}>{message.text}</Alert>}
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-                <TextField label="First name" value={profileData.firstName} disabled fullWidth InputLabelProps={{ shrink: true }} />
-                <TextField label="Last name" value={profileData.lastName} disabled fullWidth InputLabelProps={{ shrink: true }} />
-                <TextField label="Email" value={profileData.email} disabled fullWidth InputLabelProps={{ shrink: true }} />
-                <TextField label="Username" value={profileData.username} disabled fullWidth InputLabelProps={{ shrink: true }} />
-            </Box>
-
-            <Button variant="contained" onClick={() => setShowEditFields(!showEditFields)} sx={{ px: 4, py: 1.5, mb: 2 }}>
-                {showEditFields ? 'Hide edit fields' : 'Edit'}
-            </Button>
-
-            {showEditFields && (
-                <Box sx={{ mt: 2, mb: 4 }}>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <TextField label="New first name" {...register('firstName')} fullWidth InputLabelProps={{ shrink: true }} />
-                            <TextField label="New last name" {...register('lastName')} fullWidth InputLabelProps={{ shrink: true }} />
-                            <TextField label="New username" {...register('username')} fullWidth InputLabelProps={{ shrink: true }} />
-                            <TextField label="New email address" {...register('email')} fullWidth InputLabelProps={{ shrink: true }} />
-                            <Button type="submit" variant="contained" disabled={loading} sx={{ backgroundColor: '#fff', color: '#000', '&:hover': { backgroundColor: '#e0e0e0' }, px: 4, width: 'fit-content' }}>
-                                {loading ? 'Saving...' : 'Submit All'}
-                            </Button>
-                        </Box>
-                    </form>
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+                    <TextField
+                        label="First name"
+                        {...register('firstName')}
+                        disabled={!showEditFields}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <TextField
+                        label="Last name"
+                        {...register('lastName')}
+                        disabled={!showEditFields}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <TextField
+                        label="Email"
+                        {...register('email')}
+                        disabled={!showEditFields}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <TextField
+                        label="Username"
+                        {...register('username')}
+                        disabled={!showEditFields}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                    />
                 </Box>
-            )}
+
+                {!showEditFields ? (
+                    <Button
+                        variant="contained"
+                        onClick={() => setShowEditFields(true)}
+                        sx={{ px: 4, py: 1.5, mb: 2 }}
+                    >
+                        Edit
+                    </Button>
+                ) : (
+                    <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={loading}
+                            sx={{ px: 4, py: 1.5 }}
+                        >
+                            {loading ? 'Saving...' : 'Submit'}
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={handleCancel}
+                            sx={{ px: 4, py: 1.5 }}
+                        >
+                            Cancel
+                        </Button>
+                    </Stack>
+                )}
+            </form>
         </Box>
     );
 }

@@ -3,7 +3,6 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
 import UpdateProfile from './Components/UpdateProfile';
 import ChangePassword from './Components/ChangePassword';
 
