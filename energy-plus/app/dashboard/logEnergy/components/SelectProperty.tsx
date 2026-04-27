@@ -251,14 +251,14 @@ export default function SelectProperty({
                 </Box>
             ) : (
                 <>
-                    <Box>
-                        <Typography variant="body1">
-                            <strong>Organization:</strong> {selectedOrganizationName}
-                        </Typography>
-                        <Typography variant="body1" sx={{ mt: 0.5 }}>
-                            <strong>Property:</strong> {selectedPropertyName}
-                        </Typography>
-                    </Box>
+                    {/*<Box>*/}
+                    {/*    <Typography variant="body1">*/}
+                    {/*        <strong>Organization:</strong> {selectedOrganizationName}*/}
+                    {/*    </Typography>*/}
+                    {/*    <Typography variant="body1" sx={{ mt: 0.5 }}>*/}
+                    {/*        <strong>Property:</strong> {selectedPropertyName}*/}
+                    {/*    </Typography>*/}
+                    {/*</Box>*/}
 
                     <Stack
                         direction={{ xs: "column", sm: "row" }}
