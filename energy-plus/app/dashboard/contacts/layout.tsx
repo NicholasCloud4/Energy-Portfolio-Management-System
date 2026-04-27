@@ -293,14 +293,16 @@ export default function Layout() {
                     Add Existing User
                 </Button>
 
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    startIcon={<SwapHoriz />}
-                    onClick={() => setShowTransferModal(true)}
-                >
-                    Transfer Ownership
-                </Button>
+                {/* Transfer Ownership feature removed from Contacts page. Moved to Organizations page.*/}
+
+                {/*<Button*/}
+                {/*    variant="contained"*/}
+                {/*    color="secondary"*/}
+                {/*    startIcon={<SwapHoriz />}*/}
+                {/*    onClick={() => setShowTransferModal(true)}*/}
+                {/*>*/}
+                {/*    Transfer Ownership*/}
+                {/*</Button>*/}
             </Box>
 
             <ContactsTable
@@ -314,17 +316,17 @@ export default function Layout() {
                 onAddAction={handleAddContact}
             />
 
-            <TransferOwnershipDialog
-                open={showTransferModal}
-                onClose={() => setShowTransferModal(false)}
-                organizations={organizations}
-                contacts={contacts}
-                transferItem={transferItem}
-                setTransferItem={setTransferItem}
-                transferTo={transferTo}
-                setTransferTo={setTransferTo}
-                onConfirm={handleTransferOwnership}
-            />
+            {/*<TransferOwnershipDialog*/}
+            {/*    open={showTransferModal}*/}
+            {/*    onClose={() => setShowTransferModal(false)}*/}
+            {/*    organizations={organizations}*/}
+            {/*    contacts={contacts}*/}
+            {/*    transferItem={transferItem}*/}
+            {/*    setTransferItem={setTransferItem}*/}
+            {/*    transferTo={transferTo}*/}
+            {/*    setTransferTo={setTransferTo}*/}
+            {/*    onConfirm={handleTransferOwnership}*/}
+            {/*/>*/}
 
             <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
                 <DialogTitle>Remove Contact?</DialogTitle>

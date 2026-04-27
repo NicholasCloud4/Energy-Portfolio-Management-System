@@ -64,6 +64,7 @@ export default function MenuContent() {
     const mainListItemsByRole: Record<AccountType, MenuItemType[]> = {
         admin: [
             { text: "Users", icon: <PeopleIcon />, path: "/dashboard/users" },
+            { text: "User Org Data", icon: <AnalyticsIcon />, path: "/dashboard/admin/user-organization-data" },
         ],
 
         user: [
